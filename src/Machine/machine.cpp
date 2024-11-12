@@ -2,16 +2,14 @@
 
 namespace RISCVS {
 
-Machine::Machine() {
-
+Machine::Machine() : ram(RAM_PATH) {
+    if (!ram.is_open()) {
+        throw std::runtime_error("RAM was not opened");
+    }
 }
 
-MACHINE_ATTR T Machine::Load(uint64_t memoryRef) {
-
-}
-
-MACHINE_ATTR void Machine::Store(uint64_t memoryRef, T data) {
-
+Machine::~Machine() {
+    ram.close();
 }
 
 

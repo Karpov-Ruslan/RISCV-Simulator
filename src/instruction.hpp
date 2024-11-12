@@ -7,6 +7,8 @@
 #include <functional>
 #include <cstdint>
 
+#include <hart.hpp>
+
 namespace RISCVS {
 
 #define PARAM_TYPES int8_t, int16_t, int32_t, uint8_t, uint16_t, uint32_t
@@ -25,9 +27,9 @@ using UHalf = uint16_t;
 using UByte = uint8_t;
 
 struct Instruction {
-    using Param = std::optional<std::variant<PARAM_TYPES>>;
+    using Param = std::variant<PARAM_TYPES>;
 
-    std::function<void(const Param&, const Param&, const Param&)> PFN_Instruction;
+    std::function<void(Hart&, const Param&, const Param&, const Param&)> PFN_Instruction;
     Param param1;
     Param param2;
     Param param3;
