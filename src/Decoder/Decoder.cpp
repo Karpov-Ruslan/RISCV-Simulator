@@ -113,6 +113,61 @@ namespace RISCVS {
         constexpr Type::I AddI = Type::I{.funct3 = 0x0};
         constexpr Type::I XorI = Type::I{.funct3 = 0x4};
 
+        constexpr Uint mergeFunct(Uint funct3, Uint funct7) {
+            return funct3 | (funct7 << 3);
+        }
+
+        constexpr Uint mergeFunct(Type::R instr) {
+            return mergeFunct(instr.funct3, instr.funct7);
+        }
+
+        Instruction DecodeR(Uint binInstruction) {
+            Uint mergedFunc = mergeFunct(GetFunct3(binInstruction), GetFunct7(binInstruction));
+            Uint rs1 = GetRs1(binInstruction);
+            Uint rs2 = GetRs2(binInstruction);
+            Uint rd  = GetRd(binInstruction);
+
+            switch (mergedFunc) {
+                case mergeFunct(Add):
+                    std::cerr << "add\n";
+                    return Instruction{.PFN_Instruction = InstructionSet::Add,
+                                        .param1 = rd,
+                                        .param2 = rs1,
+                                        .param3 = rs2};
+
+                case mergeFunct(Sub):
+                    std::cerr << "sub\n";
+                    return Instruction{.PFN_Instruction = InstructionSet::Sub,
+                                        .param1 = rd,
+                                        .param2 = rs1,
+                                        .param3 = rs2};
+
+                default:
+                    std::cerr << "Unkown R instruction\n";
+                    return Instruction{};
+            }
+        }
+
+        Instruction DecodeILogic(Uint binInstruction) {
+
+            Uint funct3 = GetFunct3(binInstruction);
+            Uint rd = GetFunct3(binInstruction);
+            Uint rs1 = GetFunct3(binInstruction);
+            Uint imm = GetImmTypeI(binInstruction);
+
+            switch(funct3) {
+                case AddI.funct3:
+                    std::cerr << "addi\n";
+                    return Instruction{.PFN_Instruction = InstructionSet::AddI,
+                                        .param1 = rd,
+                                        .param2 = rs1,
+                                        .param3 = imm};
+
+                default:
+                    return Instruction{};
+            }
+        }
+
         Instruction Decode(Uint binInstruction) {
             Uint const opcode = GetOpcode(binInstruction);
 
@@ -120,16 +175,16 @@ namespace RISCVS {
             {
                 case Type::R::Opcode:
                     std::cerr << "R instruction\n";
-                    break;
+                    return DecodeR(binInstruction);
                 
                 case Type::I::OpcodeLogic:
                     std::cerr << "ILogic\n";
-                    break;
-                
+                    return DecodeILogic(binInstruction);
+
                 case Type::I::OpcodeLoad:
                     std::cerr << "ILoad\n";
                     break;
-                
+
                 case Type::I::OpcodeJump:
                     std::cerr << "IJump\n";
                     break;
