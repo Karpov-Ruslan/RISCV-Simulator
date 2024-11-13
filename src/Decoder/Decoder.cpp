@@ -113,6 +113,38 @@ namespace RISCVS {
         constexpr Type::I AddI = Type::I{.funct3 = 0x0};
         constexpr Type::I XorI = Type::I{.funct3 = 0x4};
 
+        constexpr Uint mergeFunct(Uint funct3, Uint funct7) {
+            return funct3 | (funct7 << 3);
+        }
+
+        constexpr Uint mergeFunct(Type::R instr) {
+            return mergeFunct(instr.funct3, instr.funct7);
+        }
+
+        Instruction DecodeR(Uint binInstruction) {
+            Uint mergedFunc = mergeFunct(GetFunct3(binInstruction), GetFunct7(binInstruction));
+            Uint rs1 = GetRs1(binInstruction);
+            Uint rs2 = GetRs2(binInstruction);
+            Uint rd  = GetRd(binInstruction);
+
+            switch (mergedFunc) {
+                case mergeFunct(Add):
+                    return Instruction{.PFN_Instruction = InstructionSet::Add,
+                                        .param1 = rd,
+                                        .param2 = rs1,
+                                        .param3 = rs2};
+                case mergeFunct(Sub):
+                    return Instruction{.PFN_Instruction = InstructionSet::Sub,
+                                        .param1 = rd,
+                                        .param2 = rs1,
+                                        .param3 = rs2};
+
+                default:
+                    std::cerr << "Unkown R instruction\n";
+                    return Instruction{};
+            }
+        }
+
         Instruction Decode(Uint binInstruction) {
             Uint const opcode = GetOpcode(binInstruction);
 
@@ -120,7 +152,7 @@ namespace RISCVS {
             {
                 case Type::R::Opcode:
                     std::cerr << "R instruction\n";
-                    break;
+                    return DecodeR(binInstruction);
                 
                 case Type::I::OpcodeLogic:
                     std::cerr << "ILogic\n";
