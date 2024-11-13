@@ -26,8 +26,8 @@ namespace RISCVS {
             
             constexpr Uint ebreak = 0b000000000001'00100'000'01000'1110011;
 
-            Decoder::Decode(add);
-            Decoder::Decode(sub);
+            Instruction addInstr = Decoder::Decode(add);
+            Instruction subInstr = Decoder::Decode(sub);
 
             Decoder::Decode(addi);
             Decoder::Decode(xori);

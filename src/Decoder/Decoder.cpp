@@ -129,11 +129,14 @@ namespace RISCVS {
 
             switch (mergedFunc) {
                 case mergeFunct(Add):
+                    std::cerr << "add\n";
                     return Instruction{.PFN_Instruction = InstructionSet::Add,
                                         .param1 = rd,
                                         .param2 = rs1,
                                         .param3 = rs2};
+
                 case mergeFunct(Sub):
+                    std::cerr << "sub\n";
                     return Instruction{.PFN_Instruction = InstructionSet::Sub,
                                         .param1 = rd,
                                         .param2 = rs1,
@@ -141,6 +144,26 @@ namespace RISCVS {
 
                 default:
                     std::cerr << "Unkown R instruction\n";
+                    return Instruction{};
+            }
+        }
+
+        Instruction DecodeILogic(Uint binInstruction) {
+
+            Uint funct3 = GetFunct3(binInstruction);
+            Uint rd = GetFunct3(binInstruction);
+            Uint rs1 = GetFunct3(binInstruction);
+            Uint imm = GetImmTypeI(binInstruction);
+
+            switch(funct3) {
+                case AddI.funct3:
+                    std::cerr << "addi\n";
+                    return Instruction{.PFN_Instruction = InstructionSet::AddI,
+                                        .param1 = rd,
+                                        .param2 = rs1,
+                                        .param3 = imm};
+
+                default:
                     return Instruction{};
             }
         }
@@ -156,12 +179,12 @@ namespace RISCVS {
                 
                 case Type::I::OpcodeLogic:
                     std::cerr << "ILogic\n";
-                    break;
-                
+                    return DecodeILogic(binInstruction);
+
                 case Type::I::OpcodeLoad:
                     std::cerr << "ILoad\n";
                     break;
-                
+
                 case Type::I::OpcodeJump:
                     std::cerr << "IJump\n";
                     break;
