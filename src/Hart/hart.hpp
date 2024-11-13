@@ -16,7 +16,7 @@ public:
 
     constexpr static RegisterIndex NUM_REGISTER = 32U;
 
-    explicit Hart(Machine& machine, int32_t programCounter) : machine(machine) {}
+    explicit Hart(Machine& machine, int32_t programCounter = 0) : machine(machine) {}
 
     Register& operator[](const RegisterIndex idx) {
         return reg[idx];
@@ -54,16 +54,32 @@ public:
     }
 
     void Execute() {
+        std::cerr << "pc: " << pc << '\n';
         uint32_t binInstruction = machine.Load<uint32_t>(pc);
+        std::cerr << "binInstr: " << std::bitset<32>{binInstruction} << '\n';
         Instruction instruction = Decoder::Decode(binInstruction);
         NextInstructionPC();
         instruction.PFN_Instruction(*this, instruction.param1, instruction.param2, instruction.param3);
     }
 
+    void Dump(int max_reg = 32) const {
+
+        if (max_reg > 32) {
+            return;
+        }
+
+        std::cout << "++++++++DUMP_STATE++++++++\n";
+        std::cout << "pc: " << pc << '\n';
+        for (int reg_idx = 0; reg_idx < max_reg; ++reg_idx) {
+            std::cout << "x[" << reg_idx << "] = " << reg[reg_idx] << '\n';
+        }
+        std::cout << "++++++++++++++++++++++++++\n";
+    }
+
 private:
     // TODO: FUCKFUCKFUCKFUCKFUCK (Register numba 0 is not always zero)
     std::array<Register, NUM_REGISTER> reg{};
-    int32_t pc;
+    int32_t pc{};
 
     Machine& machine;
 };
