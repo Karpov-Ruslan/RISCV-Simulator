@@ -14,6 +14,11 @@ int main() {
 
     //                         f7      rs2   rs1   f3  rd    op
     constexpr Uint addx1x2 = 0b0000000'00010'00001'000'00001'0110011;
+    Uint test = Decoder::Add.Build(0, 0, 0);
+
+    std::cout << std::bitset<32>{addx1x2} << '\n';
+    std::cout << std::bitset<32>{test} << '\n';
+
     constexpr Uint subx3x4 = 0b0100000'00100'00011'000'00011'0110011;
 
     hart.Dump(5);
