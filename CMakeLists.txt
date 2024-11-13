@@ -21,6 +21,7 @@ set(HEADER_LIST
     "src/Hart"
     "src/Machine"
     "src/Decoder"
+    "src"
 )
 
 foreach(header ${HEADER_LIST})
