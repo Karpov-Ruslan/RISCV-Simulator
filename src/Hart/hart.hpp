@@ -12,8 +12,8 @@ namespace RISCVS {
 class Hart {
 public:
     using Register = uint32_t;
-
     using RegisterIndex = uint16_t;
+
     constexpr static uint16_t NUM_REGISTER = 32U;
 
     explicit Hart(Machine& machine, int32_t programCounter) : machine(machine) {}
