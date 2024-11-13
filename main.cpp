@@ -1,7 +1,11 @@
-#include "src/Decoder/Decoder.hpp"
 #include <iostream>
-#include <bitset>
+
+namespace RISCVS {
+    namespace Decoder {
+        int Test();
+    }
+}
 
 int main() {
-
+    RISCVS::Decoder::Test();
 }
