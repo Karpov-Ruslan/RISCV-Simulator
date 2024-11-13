@@ -1,4 +1,4 @@
-#include "src/Decoder/Decoder.hpp"
+#include "Decoder.hpp"
 #include <iostream>
 #include <bitset>
 

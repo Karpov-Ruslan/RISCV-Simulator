@@ -16,6 +16,7 @@ add_executable(${PROJECT_NAME}
     src/Hart/hart.cpp
     src/Decoder/Decoder.cpp
     src/instruction.cpp
+    src/Decoder/Test.cpp
 )
 
 set(HEADER_LIST

@@ -2,10 +2,10 @@
 
 namespace RISCVS {
     namespace Decoder {
-        int Test();
+        int TestDecoder();
     }
 }
 
 int main() {
-    RISCVS::Decoder::Test();
+    RISCVS::Decoder::TestDecoder();
 }
