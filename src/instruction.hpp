@@ -8,10 +8,9 @@
 #include <cstdint>
 
 #include <hart.hpp>
+#include <defines.hpp>
 
 namespace RISCVS {
-
-#define PARAM_TYPES int8_t, int16_t, int32_t, uint8_t, uint16_t, uint32_t
 
 // Just useful typedefs
 using Register = Hart::Register;
@@ -47,6 +46,7 @@ void Add(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = hart[rs1] + hart[rs2];
+    hart.MovePC(4U);
 }
 
 void Sub(FUNC_SIGNATURE) {

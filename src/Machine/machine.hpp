@@ -5,8 +5,9 @@
 #include <bitset>
 #include <iostream>
 #include <string_view>
+#include <cstdint>
 
-#include "../instruction.hpp"
+#include <defines.hpp>
 
 namespace RISCVS {
 
@@ -24,7 +25,7 @@ public:
 
     ~Machine();
 
-    MACHINE_ATTR void Store(const int64_t memoryRef, const T data) {
+    MACHINE_ATTR void Store(const int32_t memoryRef, const T data) {
         ram.seekp(memoryRef);
 
         using bitset = std::bitset<8*sizeof(T)>;
@@ -40,7 +41,7 @@ public:
         ram.write(reinterpret_cast<char*>(&temp), sizeof(T));
     }
 
-    MACHINE_ATTR T Load(const int64_t memoryRef) {
+    MACHINE_ATTR T Load(const int32_t memoryRef) {
         ram.seekg(memoryRef);
         T ret;
         ram.read(reinterpret_cast<char*>(&ret), sizeof(T));
