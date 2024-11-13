@@ -14,11 +14,13 @@ add_executable(${PROJECT_NAME}
     main.cpp
     src/Machine/machine.cpp
     src/Hart/hart.cpp
+    src/Decoder/Decoder.cpp
 )
 
 set(HEADER_LIST
     "src/Hart"
     "src/Machine"
+    "src/Decoder"
 )
 
 foreach(header ${HEADER_LIST})

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <bitset>
 #include <iostream>
+#include <string_view>
 
 #include "../instruction.hpp"
 
@@ -52,7 +53,7 @@ public:
     }
 
 private:
-    constexpr static std::string RAM_PATH = "../ram/ram.txt";
+    const char* RAM_PATH = "../ram/ram.txt";
 
     std::fstream ram;
 };
