@@ -120,18 +120,60 @@ public:
         }
         return std::vector<uint8_t>();
     }
+
+    bool dumpSectionsToFile(const char* filename) {
+        std::ofstream file(filename, std::ios::binary | std::ios::out);
+        if (!file.is_open()) {
+            std::cerr << "Error: Cannot open output file " << filename << std::endl;
+            return false;
+        }
+
+        // Find required sections
+        Elf64_Shdr* textSection = nullptr;
+        Elf64_Shdr* dataSection = nullptr;
+        Elf64_Shdr* bssSection = nullptr;
+
+        for (const auto& sh : sectionHeaders) {
+            std::string name = stringTable ? (stringTable + sh->sh_name) : "";
+            if (name == ".text") textSection = sh;
+            else if (name == ".data") dataSection = sh;
+            else if (name == ".bss") bssSection = sh;
+        }
+
+        // Write .text section
+        if (textSection) {
+            const uint8_t* textData = fileContent.data() + textSection->sh_offset;
+            file.write(reinterpret_cast<const char*>(textData), textSection->sh_size);
+            std::cout << "Written .text section: " << textSection->sh_size << " bytes" << std::endl;
+        }
+
+        // Write .data section
+        if (dataSection) {
+            const uint8_t* dataContent = fileContent.data() + dataSection->sh_offset;
+            file.write(reinterpret_cast<const char*>(dataContent), dataSection->sh_size);
+            std::cout << "Written .data section: " << dataSection->sh_size << " bytes" << std::endl;
+        }
+
+        // Write .bss section (zeros)
+        if (bssSection) {
+            std::vector<uint8_t> zeros(bssSection->sh_size, 0);
+            file.write(reinterpret_cast<const char*>(zeros.data()), bssSection->sh_size);
+            std::cout << "Written .bss section: " << bssSection->sh_size << " bytes" << std::endl;
+        }
+
+        file.close();
+        return true;
+    }
 };
 
 
-int elfParserChecker(char* fname) {
+bool elfParserChecker(char* fname, char* ramFile) {
     ElfParser parser(fname);
     parser.printElfInfo();
 
-    // Example: get data from the section .text
-    auto textSection = parser.getSectionContent(".text");
-    if (!textSection.empty()) {
-        std::cout << "Size of the section .text: " << textSection.size() << " bytes" << std::endl;
+    if (!parser.dumpSectionsToFile(ramFile)) {
+        return false;
     }
 
-    return 0;
+    return true;
 }
