@@ -1,4 +1,6 @@
 #include "Decoder.hpp"
+
+#include <bitset>
 #include <iostream>
 
 namespace RISCVS {
@@ -122,12 +124,12 @@ namespace RISCVS {
         }
 
         Instruction DecodeR(Uint binInstruction) {
-            Uint mergedFunc = mergeFunct(GetFunct3(binInstruction), GetFunct7(binInstruction));
-            Uint rs1 = GetRs1(binInstruction);
-            Uint rs2 = GetRs2(binInstruction);
-            Uint rd  = GetRd(binInstruction);
+            Uint mergedFunct = mergeFunct(GetFunct3(binInstruction), GetFunct7(binInstruction));
+            uint16_t rs1 = GetRs1(binInstruction);
+            uint16_t rs2 = GetRs2(binInstruction);
+            uint16_t rd  = GetRd(binInstruction);
 
-            switch (mergedFunc) {
+            switch (mergedFunct) {
                 case mergeFunct(Add):
                     std::cerr << "add\n";
                     return Instruction{.PFN_Instruction = InstructionSet::Add,
@@ -143,7 +145,7 @@ namespace RISCVS {
                                         .param3 = rs2};
 
                 default:
-                    std::cerr << "Unkown R instruction\n";
+                    std::cerr << "Unkown R instruction: " << std::bitset<32>{mergedFunct} << '\n';
                     return Instruction{};
             }
         }
@@ -169,6 +171,7 @@ namespace RISCVS {
         }
 
         Instruction Decode(Uint binInstruction) {
+            std::cerr << std::bitset<32>{binInstruction} << '\n';
             Uint const opcode = GetOpcode(binInstruction);
 
             switch (opcode)
@@ -194,7 +197,7 @@ namespace RISCVS {
                     break;
 
                 default:
-                    std::cerr << "Unknown instruction\n";
+                    std::cerr << "Unknown instruction: " << std::bitset<32>{opcode} << '\n';
                     break;
             }
 
