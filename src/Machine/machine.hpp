@@ -54,7 +54,7 @@ public:
     }
 
 private:
-    const char* RAM_PATH = "../ram/ram.txt";
+    const char* RAM_PATH = "../ram/ram.bin";
 
     std::fstream ram;
 };
