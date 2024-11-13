@@ -27,6 +27,10 @@ public:
         pc += offset;
     }
 
+    void NextInstructionPC() {
+        MovePC(4);
+    }
+
     [[nodiscard]] uint32_t Load(const int64_t memoryRef) const {
         return machine.Load<uint32_t>(memoryRef);
     }
