@@ -21,6 +21,10 @@ namespace RISCVS {
             return field;
         }
 
+        Uint PutField(Uint startBit, Uint endBit, Uint code) {
+            return (code & Mask(0U, endBit - startBit)) << startBit;
+        }
+
         Uint GetSignBit(Uint code) {
             return GetField(31U, 31U, code);
         }
@@ -31,29 +35,18 @@ namespace RISCVS {
             return signBit == 1U ? oneExtend : 0U;
         }
 
-        Uint GetOpcode(Uint code) {
-            return GetField(0U, 6U, code);
-        }
+        #define GETPUT(start_idx, end_idx, field) \
+        Uint Get##field(Uint code) {return GetField(start_idx, end_idx, code);} \
+        Uint Put##field(Uint code) {return PutField(start_idx, end_idx, code);}
 
-        Uint GetRd(Uint code) {
-            return GetField(7U, 11U, code);
-        }
+        GETPUT(0U, 6U, Opcode)
+        GETPUT(7U, 11U, Rd)
+        GETPUT(12U, 14U, Funct3)
+        GETPUT(15U, 19U, Rs1)
+        GETPUT(20U, 24U, Rs2)
+        GETPUT(25U, 31U, Funct7)
 
-        Uint GetFunct3(Uint code) {
-            return GetField(12U, 14U, code);
-        }
-
-        Uint GetRs1(Uint code) {
-            return GetField(15U, 19U, code);
-        }
-
-        Uint GetRs2(Uint code) {
-            return GetField(20U, 24U, code);
-        }
-
-        Uint GetFunct7(Uint code) {
-            return GetField(25U, 31U, code);
-        }
+        #undef GETPUT
 
         Uint GetImmTypeI(Uint code) {
             Uint immBody = GetField(20U, 30U, code);
@@ -68,10 +61,11 @@ namespace RISCVS {
             return imm;
         }
 
-        #define CHECK(cond) if (!(cond)) {std::cerr << #cond << " failed\n"; return false;}
         bool TestGetField() {
             //                     f7      rs2   rs1   f3  rd    op  
             constexpr Uint sra = 0b0100000'00010'00100'101'01000'0110011;
+
+            #define CHECK(cond) if (!(cond)) {std::cerr << #cond << " failed\n"; return false;}
 
             CHECK(GetOpcode(sra) == 0b0110011);
             CHECK(GetRd(sra)     == 0b01000);
@@ -80,40 +74,63 @@ namespace RISCVS {
             CHECK(GetRs2(sra)    == 0b00010);
             CHECK(GetFunct7(sra) == 0b0100000);
 
+            #undef CHECK
+
             return true;
         }
 
-        namespace Type {
-            struct R {
-                static constexpr Uint Opcode = 0b110011;
-                
-                Uint rd;
-                const Uint funct3;
-                Uint rs1;
-                Uint rs2;
-                const Uint funct7;
-            };
+        Uint Type::R::Build(RegIdx rd, RegIdx rs1, RegIdx rs2) const {
+            return  Opcode              |
+                    PutRd(rd)           |
+                    PutRs1(rs1)         |
+                    PutRs2(rs2)         |
+                    PutFunct3(funct3)   |
+                    PutFunct7(funct7);
+        }
 
-            struct I {
-                static constexpr Uint OpcodeLogic = 0b0010011;
-                static constexpr Uint OpcodeLoad  = 0b0000011;
-                static constexpr Uint OpcodeJump  = 0b1100111;
-                static constexpr Uint OpcodeEnv   = 0b1110011;
+        Uint IBuild(Uint Opcode, Uint funct3, RegIdx rd, RegIdx rs1, Imm imm) {
+        return  Opcode              |
+                PutRd(rd)           |
+                PutRs1(rs1)         |
+                PutFunct3(funct3);
+        }
 
-                Uint rd;
-                const Uint funct3;
-                Uint rs1;
-                Uint imm;
-            };
-        };
+        #define BUILD_TYPE(IType)                                            \
+        Uint Type::I##IType::Build(RegIdx rd, RegIdx rs1, Imm imm) const {   \
+            return IBuild(Opcode, funct3, rd, rs1, imm);                    \
+        }
 
-        constexpr Type::R Add = Type::R{.funct3 = 0x0,
-                                        .funct7 = 0x00};
-        constexpr Type::R Sub = Type::R{.funct3 = 0x0,
-                                        .funct7 = 0x20};
+        BUILD_TYPE(Logic)
+        BUILD_TYPE(Load)
+        BUILD_TYPE(Jump)
+        BUILD_TYPE(Env)
 
-        constexpr Type::I AddI = Type::I{.funct3 = 0x0};
-        constexpr Type::I XorI = Type::I{.funct3 = 0x4};
+        #undef BUILD_TYPE
+
+        // I-logic
+        constexpr Type::ILogic AddI  = Type::ILogic{.funct3 = 0x0};
+        constexpr Type::ILogic XorI  = Type::ILogic{.funct3 = 0x4};
+        constexpr Type::ILogic OrI   = Type::ILogic{.funct3 = 0x6};
+        constexpr Type::ILogic AndI  = Type::ILogic{.funct3 = 0x7};
+        constexpr Type::ILogic SllI  = Type::ILogic{.funct3 = 0x1}; // !
+        constexpr Type::ILogic SrlI  = Type::ILogic{.funct3 = 0x5}; // ! imm[5:12]
+        constexpr Type::ILogic SraI  = Type::ILogic{.funct3 = 0x5}; // !
+        constexpr Type::ILogic SltI  = Type::ILogic{.funct3 = 0x2};
+        constexpr Type::ILogic SltIu = Type::ILogic{.funct3 = 0x3};
+
+        // I-load
+        constexpr Type::ILoad Lb  = Type::ILoad{.funct3 = 0x0};
+        constexpr Type::ILoad Lh  = Type::ILoad{.funct3 = 0x1};
+        constexpr Type::ILoad Lw  = Type::ILoad{.funct3 = 0x2};
+        constexpr Type::ILoad Lbu = Type::ILoad{.funct3 = 0x4};
+        constexpr Type::ILoad Lhu = Type::ILoad{.funct3 = 0x5};
+
+        // I-jump
+        constexpr Type::IJump Jalr = Type::IJump{.funct3 = 0x0};
+
+        // I-env
+        constexpr Type::IEnv Ecall  = Type::IEnv{.funct3 = 0x0}; // imm 0x0
+        constexpr Type::IEnv Evreak = Type::IEnv{.funct3 = 0x0}; // imm 0x1
 
         constexpr Uint mergeFunct(Uint funct3, Uint funct7) {
             return funct3 | (funct7 << 3);
@@ -125,37 +142,41 @@ namespace RISCVS {
 
         Instruction DecodeR(Uint binInstruction) {
             Uint mergedFunct = mergeFunct(GetFunct3(binInstruction), GetFunct7(binInstruction));
-            uint16_t rs1 = GetRs1(binInstruction);
-            uint16_t rs2 = GetRs2(binInstruction);
-            uint16_t rd  = GetRd(binInstruction);
+            RegIdx rs1 = GetRs1(binInstruction);
+            RegIdx rs2 = GetRs2(binInstruction);
+            RegIdx rd  = GetRd(binInstruction);
 
+            #define CASE(Instr) case mergeFunct(Instr):                             \
+                                    std::cerr << #Instr "\n";                       \
+                                    return Instruction{                             \
+                                        .PFN_Instruction = InstructionSet::Instr,   \
+                                        .param1 = rd,                               \
+                                        .param2 = rs1,                              \
+                                        .param3 = rs2};
             switch (mergedFunct) {
-                case mergeFunct(Add):
-                    std::cerr << "add\n";
-                    return Instruction{.PFN_Instruction = InstructionSet::Add,
-                                        .param1 = rd,
-                                        .param2 = rs1,
-                                        .param3 = rs2};
-
-                case mergeFunct(Sub):
-                    std::cerr << "sub\n";
-                    return Instruction{.PFN_Instruction = InstructionSet::Sub,
-                                        .param1 = rd,
-                                        .param2 = rs1,
-                                        .param3 = rs2};
+                CASE(Add)
+                CASE(Sub)
+                CASE(Xor)
+                CASE(Or)
+                CASE(And)
+                CASE(Sll)
+                CASE(Sra)
+                CASE(Slt)
+                CASE(Sltu)           
 
                 default:
                     std::cerr << "Unkown R instruction: " << std::bitset<32>{mergedFunct} << '\n';
                     return Instruction{};
             }
+            #undef CASE
         }
 
         Instruction DecodeILogic(Uint binInstruction) {
 
             Uint funct3 = GetFunct3(binInstruction);
-            Uint rd = GetFunct3(binInstruction);
-            Uint rs1 = GetFunct3(binInstruction);
-            Uint imm = GetImmTypeI(binInstruction);
+            RegIdx rd = GetFunct3(binInstruction);
+            RegIdx rs1 = GetFunct3(binInstruction);
+            RegIdx imm = GetImmTypeI(binInstruction);
 
             switch(funct3) {
                 case AddI.funct3:
@@ -180,19 +201,19 @@ namespace RISCVS {
                     std::cerr << "R instruction\n";
                     return DecodeR(binInstruction);
                 
-                case Type::I::OpcodeLogic:
+                case Type::ILogic::Opcode:
                     std::cerr << "ILogic\n";
                     return DecodeILogic(binInstruction);
 
-                case Type::I::OpcodeLoad:
+                case Type::ILoad::Opcode:
                     std::cerr << "ILoad\n";
                     break;
 
-                case Type::I::OpcodeJump:
+                case Type::IJump::Opcode:
                     std::cerr << "IJump\n";
                     break;
                 
-                case Type::I::OpcodeEnv:
+                case Type::IEnv::Opcode:
                     std::cerr << "IEnv\n";
                     break;
 
