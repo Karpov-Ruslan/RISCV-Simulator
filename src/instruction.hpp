@@ -12,8 +12,7 @@
 namespace RISCVS {
 
 // Just useful typedefs
-using Immediate = uint32_t;
-using UImmediate = uint32_t;
+using Immediate = int32_t;
 
 // Load/Store things
 using Word = int32_t;
@@ -40,10 +39,56 @@ using IParam = Instruction::Param;
 
 #define FUNC_SIGNATURE Hart& hart, const IParam& param1, const IParam& param2, const IParam& param3
 
+// Logical and arithmetical instructions
 void Add(FUNC_SIGNATURE);
 void Sub(FUNC_SIGNATURE);
+void Xor(FUNC_SIGNATURE);
+void Or(FUNC_SIGNATURE);
+void And(FUNC_SIGNATURE);
+void Sll(FUNC_SIGNATURE);
+void Srl(FUNC_SIGNATURE);
+void Sra(FUNC_SIGNATURE);
+void Slt(FUNC_SIGNATURE);
+void Sltu(FUNC_SIGNATURE);
+
+// Immediate logical and arithmetical instructions
 void AddI(FUNC_SIGNATURE);
-void SubI(FUNC_SIGNATURE);
+void XorI(FUNC_SIGNATURE);
+void OrI(FUNC_SIGNATURE);
+void AndI(FUNC_SIGNATURE);
+void SllI(FUNC_SIGNATURE);
+void SrlI(FUNC_SIGNATURE);
+void SraI(FUNC_SIGNATURE);
+void SltI(FUNC_SIGNATURE);
+void SltIU(FUNC_SIGNATURE);
+
+// Load instructions
+void Lb(FUNC_SIGNATURE);
+void Lh(FUNC_SIGNATURE);
+void Lw(FUNC_SIGNATURE);
+void Lbu(FUNC_SIGNATURE);
+void Lhu(FUNC_SIGNATURE);
+
+// Store instructions
+void Sb(FUNC_SIGNATURE);
+void Sh(FUNC_SIGNATURE);
+void Sw(FUNC_SIGNATURE);
+
+void Beq(FUNC_SIGNATURE);
+void Bne(FUNC_SIGNATURE);
+void Blt(FUNC_SIGNATURE);
+void Bge(FUNC_SIGNATURE);
+void BltU(FUNC_SIGNATURE);
+void BgeU(FUNC_SIGNATURE);
+
+void Jal(FUNC_SIGNATURE);
+void Jalr(FUNC_SIGNATURE);
+
+void Lui(FUNC_SIGNATURE);
+void AuiPC(FUNC_SIGNATURE);
+
+void ECall(FUNC_SIGNATURE);
+void EBreak(FUNC_SIGNATURE);
 
 }
 
