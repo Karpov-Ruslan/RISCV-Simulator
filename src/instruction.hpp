@@ -7,14 +7,11 @@
 #include <functional>
 #include <cstdint>
 
-#include <hart.hpp>
 #include <defines.hpp>
 
 namespace RISCVS {
 
 // Just useful typedefs
-using Register = Hart::Register;
-using RegIdx = Hart::RegisterIndex;
 using Immediate = uint32_t;
 using UImmediate = uint32_t;
 
@@ -25,6 +22,8 @@ using Byte = int8_t;
 using UWord = uint32_t;
 using UHalf = uint16_t;
 using UByte = uint8_t;
+
+class Hart;
 
 struct Instruction {
     using Param = std::variant<PARAM_TYPES>;
@@ -41,34 +40,10 @@ using IParam = Instruction::Param;
 
 #define FUNC_SIGNATURE Hart& hart, const IParam& param1, const IParam& param2, const IParam& param3
 
-void Add(FUNC_SIGNATURE) {
-    RegIdx rd = std::get<RegIdx>(param1);
-    RegIdx rs1 = std::get<RegIdx>(param2);
-    RegIdx rs2 = std::get<RegIdx>(param3);
-    hart[rd] = hart[rs1] + hart[rs2];
-    hart.MovePC(4U);
-}
-
-void Sub(FUNC_SIGNATURE) {
-    RegIdx rd = std::get<RegIdx>(param1);
-    RegIdx rs1 = std::get<RegIdx>(param2);
-    RegIdx rs2 = std::get<RegIdx>(param3);
-    hart[rd] = hart[rs1] - hart[rs2];
-}
-
-void AddI(FUNC_SIGNATURE) {
-    RegIdx rd = std::get<RegIdx>(param1);
-    RegIdx rs1 = std::get<RegIdx>(param2);
-    Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = hart[rs1] + imm;
-}
-
-void SubI(FUNC_SIGNATURE) {
-    RegIdx rd = std::get<RegIdx>(param1);
-    RegIdx rs1 = std::get<RegIdx>(param2);
-    Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = hart[rs1] - imm;
-}
+void Add(FUNC_SIGNATURE);
+void Sub(FUNC_SIGNATURE);
+void AddI(FUNC_SIGNATURE);
+void SubI(FUNC_SIGNATURE);
 
 }
 
