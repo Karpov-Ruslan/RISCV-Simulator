@@ -116,7 +116,7 @@ namespace RISCVS {
         constexpr Type::ILogic SrlI  = Type::ILogic{.funct3 = 0x5}; // ! imm[5:12]
         constexpr Type::ILogic SraI  = Type::ILogic{.funct3 = 0x5}; // !
         constexpr Type::ILogic SltI  = Type::ILogic{.funct3 = 0x2};
-        constexpr Type::ILogic SltIu = Type::ILogic{.funct3 = 0x3};
+        constexpr Type::ILogic SltIU = Type::ILogic{.funct3 = 0x3};
 
         // I-load
         constexpr Type::ILoad Lb  = Type::ILoad{.funct3 = 0x0};
@@ -129,8 +129,8 @@ namespace RISCVS {
         constexpr Type::IJump Jalr = Type::IJump{.funct3 = 0x0};
 
         // I-env
-        constexpr Type::IEnv Ecall  = Type::IEnv{.funct3 = 0x0}; // imm 0x0
-        constexpr Type::IEnv Evreak = Type::IEnv{.funct3 = 0x0}; // imm 0x1
+        constexpr Type::IEnv ECall  = Type::IEnv{.funct3 = 0x0, .imm = 0x0}; // imm 0x0
+        constexpr Type::IEnv EBreak = Type::IEnv{.funct3 = 0x0, .imm = 0x1}; // imm 0x1
 
         constexpr Uint mergeFunct(Uint funct3, Uint funct7) {
             return funct3 | (funct7 << 3);
@@ -165,29 +165,135 @@ namespace RISCVS {
                 CASE(Sltu)           
 
                 default:
-                    std::cerr << "Unkown R instruction: " << std::bitset<32>{mergedFunct} << '\n';
+                    std::cerr   << "Unkown R instruction: "
+                                << std::bitset<32>{mergedFunct} << '\n';
                     return Instruction{};
             }
             #undef CASE
         }
 
-        Instruction DecodeILogic(Uint binInstruction) {
+        bool IsSraI(Uint imm) {
+            return GetField(5U, 11U, imm) == 0x20;
+        }
 
+        Instruction DecodeILogic(Uint binInstruction) {
+            Uint funct3 = GetFunct3(binInstruction);
+            RegIdx rd = GetFunct3(binInstruction);
+            RegIdx rs1 = GetFunct3(binInstruction);
+            RegIdx imm = GetImmTypeI(binInstruction);
+            // TODO: ^--- common for all DecodeI*: move to function
+
+            #define CASE(Instr) case Instr.funct3:                      \
+                        std::cerr << #Instr "\n";                       \
+                        return Instruction{                             \
+                            .PFN_Instruction = InstructionSet::Instr,   \
+                            .param1 = rd,                               \
+                            .param2 = rs1,                              \
+                            .param3 = imm};
+            switch(funct3) {
+                CASE(AddI)
+                CASE(XorI)
+                CASE(OrI)
+                CASE(AndI)
+                CASE(SllI)
+                CASE(SltI)
+                CASE(SltIU)
+
+                case SrlI.funct3:
+                    if (IsSraI(imm)) {
+                        std::cerr << "SraI\n";
+                        return Instruction{
+                        .PFN_Instruction = InstructionSet::SraI,
+                        .param1 = rd,
+                        .param2 = rs1,
+                        .param3 = imm};
+                    }                    
+
+                    std::cerr << "SrlI\n";
+                    return Instruction{
+                        .PFN_Instruction = InstructionSet::SrlI,
+                        .param1 = rd,
+                        .param2 = rs1,
+                        .param3 = imm};
+
+                default:
+                    std::cerr   << "Unkown ILogic instruction: "
+                                << std::bitset<32>{funct3} << '\n';
+                    return Instruction{};
+            }
+            #undef CASE
+        }
+
+        Instruction DecodeILoad(Uint binInstruction) {
             Uint funct3 = GetFunct3(binInstruction);
             RegIdx rd = GetFunct3(binInstruction);
             RegIdx rs1 = GetFunct3(binInstruction);
             RegIdx imm = GetImmTypeI(binInstruction);
 
+            #define CASE(Instr) case Instr.funct3:                      \
+                        std::cerr << #Instr "\n";                       \
+                        return Instruction{                             \
+                            .PFN_Instruction = InstructionSet::Instr,   \
+                            .param1 = rd,                               \
+                            .param2 = rs1,                              \
+                            .param3 = imm};
             switch(funct3) {
-                case AddI.funct3:
-                    std::cerr << "addi\n";
-                    return Instruction{.PFN_Instruction = InstructionSet::AddI,
-                                        .param1 = rd,
-                                        .param2 = rs1,
-                                        .param3 = imm};
+                CASE(Lb)
+                CASE(Lh)
+                CASE(Lw)
+                CASE(Lbu)
+                CASE(Lhu)
 
                 default:
+                    std::cerr   << "Unkown ILoad instruction: "
+                                << std::bitset<32>{funct3} << '\n';
                     return Instruction{};
+            }
+            #undef CASE
+        }
+
+        Instruction DecodeIJump(Uint binInstruction) {
+            Uint funct3 = GetFunct3(binInstruction);
+            RegIdx rd = GetFunct3(binInstruction);
+            RegIdx rs1 = GetFunct3(binInstruction);
+            RegIdx imm = GetImmTypeI(binInstruction);
+
+            std::cerr << "Jalr\n";
+            return Instruction{                            
+                .PFN_Instruction = InstructionSet::Jalr,
+                .param1 = rd,
+                .param2 = rs1,
+                .param3 = imm};
+        }
+
+        Instruction DecodeIEnv(Uint binInstruction) {
+            Uint funct3 = GetFunct3(binInstruction);
+            RegIdx rd = GetFunct3(binInstruction);
+            RegIdx rs1 = GetFunct3(binInstruction);
+            RegIdx imm = GetImmTypeI(binInstruction);
+
+            switch (imm)
+            {
+            case ECall.imm:
+                std::cerr << "ECall\n";
+                return Instruction{                            
+                    .PFN_Instruction = InstructionSet::ECall,
+                    .param1 = rd,
+                    .param2 = rs1,
+                    .param3 = imm};
+            
+            case EBreak.imm:
+                std::cerr << "EBreak\n";
+                return Instruction{                            
+                    .PFN_Instruction = InstructionSet::EBreak,
+                    .param1 = rd,
+                    .param2 = rs1,
+                    .param3 = imm};
+
+            default:
+                std::cerr   << "Unkown IEnv instruction: "
+                            << std::bitset<32>{imm} << '\n';
+                return Instruction{};
             }
         }
 
@@ -207,15 +313,15 @@ namespace RISCVS {
 
                 case Type::ILoad::Opcode:
                     std::cerr << "ILoad\n";
-                    break;
+                    return DecodeILoad(binInstruction);
 
                 case Type::IJump::Opcode:
                     std::cerr << "IJump\n";
-                    break;
+                    return DecodeIJump(binInstruction);
                 
                 case Type::IEnv::Opcode:
                     std::cerr << "IEnv\n";
-                    break;
+                    return DecodeIEnv(binInstruction);
 
                 default:
                     std::cerr << "Unknown instruction: " << std::bitset<32>{opcode} << '\n';

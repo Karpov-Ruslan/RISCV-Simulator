@@ -50,6 +50,7 @@ namespace RISCVS {
             struct IEnv {
                 static constexpr Uint Opcode = 0b1110011;
                 const Uint funct3;
+                const Uint imm;
 
                 Uint Build(RegIdx rd, RegIdx rs1, Imm imm) const;
             };
