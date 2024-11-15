@@ -86,6 +86,7 @@ void AddI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
+    std::cerr << rd << ' ' << rs1 << ' ' << imm << '\n';
     hart[rd] = hart[rs1] + imm;
 }
 

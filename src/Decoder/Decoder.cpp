@@ -54,6 +54,10 @@ namespace RISCVS {
             return imm;
         }
 
+        Uint PutImmTypeI(Immediate imm) {
+            return PutField(20U, 31U, imm);
+        }
+
         Uint GetImmTypeS(Uint code) {
             Uint immBodyPart1 = GetField(7U, 11U, code);
             Uint immBodyPart2 = GetField(25U, 30U, code) << 5U;
@@ -88,15 +92,16 @@ namespace RISCVS {
                     PutFunct7(funct7);
         }
 
-        Uint IBuild(Uint Opcode, Uint funct3, RegIdx rd, RegIdx rs1, Imm imm) {
+        Uint IBuild(Uint Opcode, Uint funct3, RegIdx rd, RegIdx rs1, Immediate imm) {
         return  Opcode              |
                 PutRd(rd)           |
                 PutRs1(rs1)         |
-                PutFunct3(funct3);
+                PutFunct3(funct3)   |
+                PutImmTypeI(imm);
         }
 
         #define BUILD_TYPE(IType)                                            \
-        Uint Type::I##IType::Build(RegIdx rd, RegIdx rs1, Imm imm) const {   \
+        Uint Type::I##IType::Build(RegIdx rd, RegIdx rs1, Immediate imm) const {   \
             return IBuild(Opcode, funct3, rd, rs1, imm);                    \
         }
 
@@ -106,31 +111,6 @@ namespace RISCVS {
         BUILD_TYPE(Env)
 
         #undef BUILD_TYPE
-
-        // I-logic
-        constexpr Type::ILogic AddI  = Type::ILogic{.funct3 = 0x0};
-        constexpr Type::ILogic XorI  = Type::ILogic{.funct3 = 0x4};
-        constexpr Type::ILogic OrI   = Type::ILogic{.funct3 = 0x6};
-        constexpr Type::ILogic AndI  = Type::ILogic{.funct3 = 0x7};
-        constexpr Type::ILogic SllI  = Type::ILogic{.funct3 = 0x1}; // !
-        constexpr Type::ILogic SrlI  = Type::ILogic{.funct3 = 0x5}; // ! imm[5:12]
-        constexpr Type::ILogic SraI  = Type::ILogic{.funct3 = 0x5}; // !
-        constexpr Type::ILogic SltI  = Type::ILogic{.funct3 = 0x2};
-        constexpr Type::ILogic SltIU = Type::ILogic{.funct3 = 0x3};
-
-        // I-load
-        constexpr Type::ILoad Lb  = Type::ILoad{.funct3 = 0x0};
-        constexpr Type::ILoad Lh  = Type::ILoad{.funct3 = 0x1};
-        constexpr Type::ILoad Lw  = Type::ILoad{.funct3 = 0x2};
-        constexpr Type::ILoad Lbu = Type::ILoad{.funct3 = 0x4};
-        constexpr Type::ILoad Lhu = Type::ILoad{.funct3 = 0x5};
-
-        // I-jump
-        constexpr Type::IJump Jalr = Type::IJump{.funct3 = 0x0};
-
-        // I-env
-        constexpr Type::IEnv ECall  = Type::IEnv{.funct3 = 0x0, .imm = 0x0}; // imm 0x0
-        constexpr Type::IEnv EBreak = Type::IEnv{.funct3 = 0x0, .imm = 0x1}; // imm 0x1
 
         constexpr Uint mergeFunct(Uint funct3, Uint funct7) {
             return funct3 | (funct7 << 3);
@@ -173,14 +153,14 @@ namespace RISCVS {
         }
 
         bool IsSraI(Uint imm) {
-            return GetField(5U, 11U, imm) == 0x20;
+            return GetField(5U, 11U, imm) == SraI.highImm;
         }
 
         Instruction DecodeILogic(Uint binInstruction) {
             Uint funct3 = GetFunct3(binInstruction);
-            RegIdx rd = GetFunct3(binInstruction);
-            RegIdx rs1 = GetFunct3(binInstruction);
-            RegIdx imm = GetImmTypeI(binInstruction);
+            RegIdx rd = GetRd(binInstruction);
+            RegIdx rs1 = GetRs1(binInstruction);
+            Immediate imm = GetImmTypeI(binInstruction);
             // TODO: ^--- common for all DecodeI*: move to function
 
             #define CASE(Instr) case Instr.funct3:                      \
@@ -226,9 +206,9 @@ namespace RISCVS {
 
         Instruction DecodeILoad(Uint binInstruction) {
             Uint funct3 = GetFunct3(binInstruction);
-            RegIdx rd = GetFunct3(binInstruction);
-            RegIdx rs1 = GetFunct3(binInstruction);
-            RegIdx imm = GetImmTypeI(binInstruction);
+            RegIdx rd = GetRd(binInstruction);
+            RegIdx rs1 = GetRs1(binInstruction);
+            Immediate imm = GetImmTypeI(binInstruction);
 
             #define CASE(Instr) case Instr.funct3:                      \
                         std::cerr << #Instr "\n";                       \
@@ -254,9 +234,9 @@ namespace RISCVS {
 
         Instruction DecodeIJump(Uint binInstruction) {
             Uint funct3 = GetFunct3(binInstruction);
-            RegIdx rd = GetFunct3(binInstruction);
-            RegIdx rs1 = GetFunct3(binInstruction);
-            RegIdx imm = GetImmTypeI(binInstruction);
+            RegIdx rd = GetRd(binInstruction);
+            RegIdx rs1 = GetRs1(binInstruction);
+            Immediate imm = GetImmTypeI(binInstruction);
 
             std::cerr << "Jalr\n";
             return Instruction{                            
@@ -270,7 +250,7 @@ namespace RISCVS {
             Uint funct3 = GetFunct3(binInstruction);
             RegIdx rd = GetFunct3(binInstruction);
             RegIdx rs1 = GetFunct3(binInstruction);
-            RegIdx imm = GetImmTypeI(binInstruction);
+            Immediate imm = GetImmTypeI(binInstruction);
 
             switch (imm)
             {
@@ -298,7 +278,7 @@ namespace RISCVS {
         }
 
         Instruction Decode(Uint binInstruction) {
-            std::cerr << std::bitset<32>{binInstruction} << '\n';
+            // std::cerr << std::bitset<32>{binInstruction} << '\n';
             Uint const opcode = GetOpcode(binInstruction);
 
             switch (opcode)

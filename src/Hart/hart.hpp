@@ -56,7 +56,7 @@ public:
     void Execute() {
         std::cerr << "pc: " << pc << '\n';
         uint32_t binInstruction = machine.Load<uint32_t>(pc);
-        std::cerr << "binInstr: " << std::bitset<32>{binInstruction} << '\n';
+        // std::cerr << "binInstr: " << std::bitset<32>{binInstruction} << '\n';
         Instruction instruction = Decoder::Decode(binInstruction);
         NextInstructionPC();
         instruction.PFN_Instruction(*this, instruction.param1, instruction.param2, instruction.param3);

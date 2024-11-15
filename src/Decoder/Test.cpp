@@ -1,42 +1,91 @@
-#include "Decoder.hpp"
+#include <hart.hpp>
+#include <machine.hpp>
 #include <iostream>
-#include <bitset>
+#include <cstdlib>
+
+#define CHECK(cond)                                                         \
+    if (!(cond)) {                                                          \
+        std::cerr << testIdx << " is broken\n";     /* Not informative!*/   \
+        return false;                                                       \
+    }
 
 namespace RISCVS {
 
     namespace Decoder {
 
+        bool TestR(  Hart& hart,
+                    Type::R instr,
+                    std::function<bool(Uint, Uint, Uint)> cond) {
+                std::cerr << "---------[]---------\n";
+                RegIdx rdIdx = 0;
+                RegIdx rs1Idx = 1;
+                RegIdx rs2Idx = 2;
+
+                hart[rdIdx] = std::rand();
+                hart[rs1Idx] = std::rand();
+                hart[rs2Idx] = std::rand();
+
+                static int testIdx = 0;
+                testIdx++;
+
+                auto testInstr = instr.Build(rdIdx, rs1Idx, rs2Idx);
+                auto pc = hart.GetPC();
+                hart.Store(pc, testInstr);
+
+                hart.Execute();
+
+                CHECK(cond(hart[rdIdx], hart[rs1Idx], hart[rs2Idx]));
+
+                return true;
+        }
+
+        bool TestI(  Hart& hart,
+                    Type::ILogic instr,
+                    std::function<bool(Uint, Uint, Uint)> cond) {
+                std::cerr << "---------[]---------\n";
+                RegIdx rdIdx = 0;
+                RegIdx rs1Idx = 1;
+                
+                hart[rdIdx] = std::rand();
+                hart[rs1Idx] = std::rand();
+                Immediate imm  = std::rand() % 500;
+
+                static int testIdx = 0;
+                testIdx++;
+
+                std::cerr << rdIdx << ' ' << rs1Idx << ' ' << imm << '\n';
+                auto testInstr = instr.Build(rdIdx, rs1Idx, imm);
+                auto pc = hart.GetPC();
+                hart.Store(pc, testInstr);
+
+                hart.Execute();
+
+                CHECK(cond(hart[rdIdx], hart[rs1Idx], imm));
+
+                return true;
+        }
+
         int TestDecoder() {
-            if (Decoder::TestGetField()) {
-                std::cerr << "TestGetField is OK\n";
-            }
+            Machine machine{};
+            Hart hart{machine};
 
-            //                     f7      rs2   rs1   f3  rd    op  
-            constexpr Uint add = 0b0000000'00010'00100'000'01000'0110011;
-            constexpr Uint sub = 0b0100000'00010'00100'000'01000'0110011;
+            std::srand(0);
 
-            //                        imm          rs1   f3  rd    op  
-            constexpr Uint addi   = 0b000000000101'00100'000'01000'0010011;
-            constexpr Uint xori   = 0b000000001010'00100'100'01000'0010011;
+            // R
+            TestR(hart, Add, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 + rs2);});
+            TestR(hart, Sub, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 - rs2);});
+            TestR(hart, Xor, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 ^ rs2);});
             
-            constexpr Uint lb     = 0b000000000101'00100'000'01000'0000011;
-            constexpr Uint lh     = 0b000000001010'00100'001'01000'0000011;
-            
-            constexpr Uint jalr   = 0b000000000101'00100'000'01000'1100111;
-            
-            constexpr Uint ebreak = 0b000000000001'00100'000'01000'1110011;
+            // ILogic
+            TestI(hart, AddI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 + imm);});
+            TestI(hart, XorI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 ^ imm);});
+            TestI(hart, OrI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 | imm);});
 
-            Instruction addInstr = Decoder::Decode(add);
-            Instruction subInstr = Decoder::Decode(sub);
+            // ILoad
 
-            Decoder::Decode(addi);
-            Decoder::Decode(xori);
+            // IJump
 
-            Decoder::Decode(lb);
-            Decoder::Decode(lh);
-
-            Decoder::Decode(jalr);
-            Decoder::Decode(ebreak);
+            // IEnv
         }
 
     } // Decoder
