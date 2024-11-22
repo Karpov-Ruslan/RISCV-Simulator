@@ -27,17 +27,8 @@ public:
 
     MACHINE_ATTR void Store(const int32_t memoryRef, const T data) {
         ram.seekp(memoryRef);
-
         using bitset = std::bitset<8*sizeof(T)>;
-
         T temp = data;
-#ifdef INV_MEMORY_ORDER
-        std::string bit_repr = bitset(data).to_string();
-        std::cout << bit_repr << std::endl;
-        std::reverse(bit_repr.begin(), bit_repr.end());
-        std::cout << bit_repr << std::endl;
-        temp = static_cast<T>(bitset(bit_repr).to_ullong());
-#endif
         ram.write(reinterpret_cast<char*>(&temp), sizeof(T));
     }
 
@@ -45,11 +36,6 @@ public:
         ram.seekg(memoryRef);
         T ret;
         ram.read(reinterpret_cast<char*>(&ret), sizeof(T));
-        // No working code)
-        // std::string bit_repr = std::bitset<sizeof(T)>(ret).to_string();
-        // std::cout << bit_repr << std::endl;
-        // std::reverse(bit_repr.begin(), bit_repr.end());
-        // ret = static_cast<T>(std::bitset<sizeof(T)>(bit_repr).to_ullong());
         return ret;
     }
 

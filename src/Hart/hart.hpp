@@ -44,6 +44,10 @@ public:
         return machine.Load<T>(memoryRef);
     }
 
+    int32_t M(const int32_t memoryRef) const {
+        return Load<int32_t>(memoryRef);
+    }
+
     [[nodiscard]] uint32_t Fetch(const int32_t memoryRef) const {
         return Load<uint32_t>(memoryRef);
     }

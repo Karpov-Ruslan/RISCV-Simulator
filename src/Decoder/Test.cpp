@@ -2,6 +2,7 @@
 #include <machine.hpp>
 #include <iostream>
 #include <cstdlib>
+#include <Decoder.hpp>
 
 #define CHECK(cond)                                                         \
     if (!(cond)) {                                                          \
@@ -65,6 +66,49 @@ namespace RISCVS {
                 return true;
         }
 
+        bool TestI(  Hart& hart,
+                    Type::ILoad instr,
+                    std::function<bool(Uint, Uint, Uint)> cond) {
+                std::cerr << "---------[]---------\n";
+                RegIdx rdIdx = 0;
+                RegIdx rs1Idx = 1;
+                
+                hart[rdIdx] = std::rand();
+                hart[rs1Idx] = std::rand();
+                Immediate imm  = std::rand() % 500;
+
+                static int testIdx = 0;
+                testIdx++;
+
+                std::cerr << rdIdx << ' ' << rs1Idx << ' ' << imm << '\n';
+                auto testInstr = instr.Build(rdIdx, rs1Idx, imm);
+                auto pc = hart.GetPC();
+                hart.Store(pc, testInstr);
+
+                hart.Execute();
+
+                CHECK(cond(hart[rdIdx], hart[rs1Idx], imm));
+
+                return true;
+        }
+
+        bool Cmp(int32_t lhs, int32_t rhs, int32_t bits = 32) {
+            int32_t mask = Mask(0, bits - 1);
+            return (lhs & mask) == (rhs & mask);
+        }
+
+        bool CmpB(int32_t lhs, int32_t rhs) {
+            return Cmp(lhs, rhs, 8);
+        }
+
+        bool CmpH(int32_t lhs, int32_t rhs) {
+            return Cmp(lhs, rhs, 16);
+        }
+
+        bool CmpW(int32_t lhs, int32_t rhs) {
+            return Cmp(lhs, rhs, 32);
+        }
+
         int TestDecoder() {
             Machine machine{};
             Hart hart{machine};
@@ -82,10 +126,32 @@ namespace RISCVS {
             TestI(hart, OrI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 | imm);});
 
             // ILoad
+            TestI(hart, Lb, [&hart](Uint rd, Uint rs1, Uint imm){return CmpB(hart.M(rs1 + imm), rd);});
+            TestI(hart, Lh, [&hart](Uint rd, Uint rs1, Uint imm){return CmpH(hart.M(rs1 + imm), rd);});
+            TestI(hart, Lw, [&hart](Uint rd, Uint rs1, Uint imm){return CmpW(hart.M(rs1 + imm), rd);});
 
             // IJump
+                // jalr
 
             // IEnv
+                // ebreak
+
+            // S
+                // sb
+                // sh
+                // sw
+
+            // B
+                // beq
+                // bne
+                // blt
+
+            // U
+                // lui
+                // auipc
+
+            // J
+                // jal
         }
 
     } // Decoder

@@ -11,6 +11,12 @@ namespace RISCVS {
 
     namespace Decoder {
 
+        constexpr Uint Mask(Uint startBit, Uint endBit) {
+            Uint lowerBound = (1U << (startBit)) - 1U;
+            Uint upperBound = (endBit != 31U? (1 << (endBit + 1U)) - 1U : -1U);
+            return upperBound - lowerBound;
+        };
+
         int TestDecoder();
 
         Uint GetOpcode(Uint code);
