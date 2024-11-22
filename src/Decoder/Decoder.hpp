@@ -64,7 +64,7 @@ namespace RISCVS {
 
                 const Uint funct3;
 
-                Uint Build(Immediate imm, RegIdx rs1, RegIdx rs2) const;
+                Uint Build(RegIdx rs1, RegIdx rs2, Immediate imm) const;
             };
 
             struct B {
@@ -72,7 +72,7 @@ namespace RISCVS {
 
                 const Uint funct3;
 
-                Uint Build(Immediate imm, RegIdx rs1, RegIdx rs2) const;
+                Uint Build(RegIdx rs1, RegIdx rs2, Immediate imm) const;
             };
 
             struct U {

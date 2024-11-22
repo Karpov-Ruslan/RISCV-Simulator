@@ -65,10 +65,47 @@ namespace RISCVS {
             return imm;
         }
 
+        Uint PutImmTypeS(Immediate imm) {
+            Uint immBodyPart1 = GetField(0U, 4U, imm);
+            Uint immBodyPart2 = GetField(5U, 11U, imm);
+            Uint res =  PutField(7U, 11U, immBodyPart1)  |
+                        PutField(25U, 31U, immBodyPart2);
+            return res;
+        }
+
+        Uint GetImmTypeB(Uint code) {
+            Uint immBodyPart1 = GetField(8U, 11U, code);
+            Uint immBodyPart2 = GetField(25U, 30U, code);
+            Uint immBodyPart3 = GetField(7U, 7U, code);
+
+            Uint imm =  PutField(1U, 4U, immBodyPart1) |
+                        PutField(5U, 10U, immBodyPart2) |
+                        PutField(11U, 11U, immBodyPart3) |
+                        ExtendWithSignBit(12U, code);
+            return imm;
+        }
+
+        Uint PutImmTypeB(Immediate imm) {
+            Uint immBodyPart1 = GetField(1U, 4U, imm);
+            Uint immBodyPart2 = GetField(5U, 10U, imm);
+            Uint immBodyPart3 = GetField(11U, 11U, imm);
+            Uint sign = GetField(31U, 31U, imm);
+
+            Uint res =  PutField(8U, 11U, immBodyPart1) |
+                        PutField(25U, 30U, immBodyPart2) |
+                        PutField(7U, 7U, immBodyPart3) |
+                        PutField(31U, 31U, sign);
+            return imm;
+        }
+
         Uint GetImmTypeU(Uint code) {
             Uint imm = GetField(12U, 30U, code);
             imm <<= 12U;
             return imm;
+        }
+
+        Uint PutImmTypeU(Immediate imm) {
+            return imm & (~Mask(0U, 11U));
         }
 
         Uint GetImmTypeJ(Uint code) {
@@ -77,6 +114,24 @@ namespace RISCVS {
             Uint immBodyPart3 = GetField(12U, 19U, code) << 12U;
             Uint imm = immBodyPart1 | immBodyPart2 | immBodyPart3 | ExtendWithSignBit(20U, code);
             return imm;
+        }
+
+        Uint PutImmTypeJ(Immediate imm) {
+            Uint res = 0U;
+            
+            Uint immBodyPart1 = GetField(1U, 10U, imm);
+            res |= PutField(21U, 30U, immBodyPart1);
+            
+            Uint immBodyPart2 = GetField(11U, 11U, imm); 
+            res |= PutField(20U, 20U, immBodyPart2);
+            
+            Uint immBodyPart3 = GetField(12U, 19U, imm);
+            res |= PutField(12U, 19U, immBodyPart3);
+            
+            Uint immBodyPart4 = GetField(20U, 20U, imm);
+            res |= PutField(31U, 31U, immBodyPart4);
+            
+            return res;
         }
 
         bool TestGetField() {
@@ -125,6 +180,34 @@ namespace RISCVS {
         BUILD_TYPE(Env)
 
         #undef BUILD_TYPE
+
+        Uint Type::S::Build(RegIdx rs1, RegIdx rs2, Immediate imm) const {
+            return  Opcode              |
+                    PutImmTypeS(imm)    |
+                    PutFunct3(funct3)   |
+                    PutRs1(rs1)         |
+                    PutRs2(rs2);
+        };
+
+        Uint Type::B::Build(RegIdx rs1, RegIdx rs2, Immediate imm) const {
+            return  Opcode              |
+                    PutImmTypeB(imm)    |
+                    PutFunct3(funct3)   |
+                    PutRs1(rs1)         |
+                    PutRs2(rs2);
+        };
+
+        Uint Type::U::Build(RegIdx rd, Immediate imm) const {
+            return  Opcode              |
+                    PutImmTypeU(imm)    |
+                    PutRd(rd);
+        };
+
+        Uint Type::J::Build(RegIdx rd, Immediate imm) const {
+            return  Opcode              |
+                    PutImmTypeJ(imm)    |
+                    PutRd(rd);
+        };
 
         constexpr Uint mergeFunct(Uint funct3, Uint funct7) {
             return funct3 | (funct7 << 3);
@@ -322,7 +405,7 @@ namespace RISCVS {
             Uint funct3 = GetFunct3(binInstruction);
             RegIdx rs1 = GetRs1(binInstruction);
             RegIdx rs2 = GetRs2(binInstruction);
-            Immediate imm = GetImmTypeS(binInstruction);
+            Immediate imm = GetImmTypeB(binInstruction);
 
             #define CASE(Instr) case Instr.funct3:             \
                 std::cerr << #Instr "\n";                      \
