@@ -65,6 +65,20 @@ namespace RISCVS {
             return imm;
         }
 
+        Uint GetImmTypeU(Uint code) {
+            Uint imm = GetField(12U, 30U, code);
+            imm <<= 12U;
+            return imm;
+        }
+
+        Uint GetImmTypeJ(Uint code) {
+            Uint immBodyPart1 = GetField(21U, 30U, code) << 1U;
+            Uint immBodyPart2 = GetField(20U, 20U, code) << 11U;
+            Uint immBodyPart3 = GetField(12U, 19U, code) << 12U;
+            Uint imm = immBodyPart1 | immBodyPart2 | immBodyPart3 | ExtendWithSignBit(20U, code);
+            return imm;
+        }
+
         bool TestGetField() {
             //                     f7      rs2   rs1   f3  rd    op  
             constexpr Uint sra = 0b0100000'00010'00100'101'01000'0110011;
@@ -248,8 +262,8 @@ namespace RISCVS {
 
         Instruction DecodeIEnv(Uint binInstruction) {
             Uint funct3 = GetFunct3(binInstruction);
-            RegIdx rd = GetFunct3(binInstruction);
-            RegIdx rs1 = GetFunct3(binInstruction);
+            RegIdx rd = GetRd(binInstruction);
+            RegIdx rs1 = GetRs1(binInstruction);
             Immediate imm = GetImmTypeI(binInstruction);
 
             switch (imm)
@@ -277,6 +291,97 @@ namespace RISCVS {
             }
         }
 
+        Instruction DecodeS(Uint binInstruction) {
+            Uint funct3 = GetFunct3(binInstruction);
+            RegIdx rs1 = GetRs1(binInstruction);
+            RegIdx rs2 = GetRs2(binInstruction);
+            Immediate imm = GetImmTypeS(binInstruction);
+
+            #define CASE(Instr) case Instr.funct3:             \
+                std::cerr << #Instr "\n";                      \
+                return Instruction{                            \
+                    .PFN_Instruction = InstructionSet::Instr,  \
+                    .param1 = rs1,                             \
+                    .param2 = rs2,                             \
+                    .param3 = imm};
+            switch (funct3)
+            {
+                CASE(Sb)
+                CASE(Sh)
+                CASE(Sw)
+                
+            default:
+                std::cerr   << "Unkown S instruction: "
+                            << std::bitset<32>{imm} << '\n';
+                return Instruction{};
+            }
+            #undef CASE
+        }
+
+        Instruction DecodeB(Uint binInstruction) {
+            Uint funct3 = GetFunct3(binInstruction);
+            RegIdx rs1 = GetRs1(binInstruction);
+            RegIdx rs2 = GetRs2(binInstruction);
+            Immediate imm = GetImmTypeS(binInstruction);
+
+            #define CASE(Instr) case Instr.funct3:             \
+                std::cerr << #Instr "\n";                      \
+                return Instruction{                            \
+                    .PFN_Instruction = InstructionSet::Instr,  \
+                    .param1 = rs1,                             \
+                    .param2 = rs2,                             \
+                    .param3 = imm};
+            switch (funct3)
+            {
+                CASE(Beq)
+                CASE(Bne)
+                CASE(Blt)
+                CASE(Bge)
+                CASE(BltU)
+                CASE(BgeU)
+                
+            default:
+                std::cerr   << "Unkown B instruction: "
+                            << std::bitset<32>{imm} << '\n';
+                return Instruction{};
+            }
+            #undef CASE
+        }
+
+        Instruction DecodeU(Uint binInstruction) {
+            Uint opcode = GetOpcode(binInstruction); 
+            RegIdx rd = GetRd(binInstruction);
+            Immediate imm = GetImmTypeU(binInstruction);
+
+            #define CASE(Instr) case Instr.Opcode:             \
+                std::cerr << #Instr "\n";                      \
+                return Instruction{                            \
+                    .PFN_Instruction = InstructionSet::Instr,  \
+                    .param1 = rd,                              \
+                    .param2 = imm};
+            switch (opcode)
+            {
+                CASE(Lui)
+                CASE(AuiPC)
+                
+            default:
+                std::cerr   << "Unkown U instruction: "
+                            << std::bitset<32>{imm} << '\n';
+                return Instruction{};
+            }
+            #undef CASE
+        }
+
+        Instruction DecodeJ(Uint binInstruction) {
+            RegIdx rd = GetRd(binInstruction);
+            Immediate imm = GetImmTypeJ(binInstruction);
+
+            return Instruction{                
+                .PFN_Instruction = InstructionSet::Jal, 
+                .param1 = rd,
+                .param2 = imm};
+        }
+
         Instruction Decode(Uint binInstruction) {
             // std::cerr << std::bitset<32>{binInstruction} << '\n';
             Uint const opcode = GetOpcode(binInstruction);
@@ -284,7 +389,7 @@ namespace RISCVS {
             switch (opcode)
             {
                 case Type::R::Opcode:
-                    std::cerr << "R instruction\n";
+                    std::cerr << "R\n";
                     return DecodeR(binInstruction);
                 
                 case Type::ILogic::Opcode:
@@ -302,6 +407,23 @@ namespace RISCVS {
                 case Type::IEnv::Opcode:
                     std::cerr << "IEnv\n";
                     return DecodeIEnv(binInstruction);
+
+                case Type::S::Opcode:
+                    std::cerr << "S\n";
+                    return DecodeS(binInstruction);
+
+                case Type::B::Opcode:
+                    std::cerr << "B\n";
+                    return DecodeB(binInstruction);
+
+                case Lui.Opcode:
+                case AuiPC.Opcode:
+                    std::cerr << "U\n";
+                    return DecodeU(binInstruction);
+
+                case Type::J::Opcode:
+                    std::cerr << "J\n";
+                    return DecodeJ(binInstruction);
 
                 default:
                     std::cerr << "Unknown instruction: " << std::bitset<32>{opcode} << '\n';

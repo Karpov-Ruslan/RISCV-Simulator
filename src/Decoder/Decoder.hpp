@@ -58,6 +58,34 @@ namespace RISCVS {
 
                 Uint Build(RegIdx rd, RegIdx rs1, Immediate imm) const;
             };
+
+            struct S {
+                static constexpr Uint Opcode = 0b0100011;
+
+                const Uint funct3;
+
+                Uint Build(Immediate imm, RegIdx rs1, RegIdx rs2) const;
+            };
+
+            struct B {
+                static constexpr Uint Opcode = 0b1100011;
+
+                const Uint funct3;
+
+                Uint Build(Immediate imm, RegIdx rs1, RegIdx rs2) const;
+            };
+
+            struct U {
+                const Uint Opcode;
+            
+                Uint Build(RegIdx rd, Immediate imm) const;
+            };
+
+            struct J {
+                static constexpr Uint Opcode = 0b1101111;
+
+                Uint Build(RegIdx rd, Immediate imm) const;
+            };
         } // Type
 
         constexpr Type::R Add  = Type::R{.funct3 = 0x0, .funct7 = 0x00};
@@ -95,6 +123,26 @@ namespace RISCVS {
         // I-env
         constexpr Type::IEnv ECall  = Type::IEnv{.funct3 = 0x0, .imm = 0x0};
         constexpr Type::IEnv EBreak = Type::IEnv{.funct3 = 0x0, .imm = 0x1};
+    
+        // S
+        constexpr Type::S Sb  = Type::S{.funct3 = 0x0};
+        constexpr Type::S Sh  = Type::S{.funct3 = 0x1};
+        constexpr Type::S Sw  = Type::S{.funct3 = 0x2};
+
+        // B
+        constexpr Type::B Beq  = Type::B{.funct3 = 0x0};
+        constexpr Type::B Bne  = Type::B{.funct3 = 0x1};
+        constexpr Type::B Blt  = Type::B{.funct3 = 0x4};
+        constexpr Type::B Bge  = Type::B{.funct3 = 0x5};
+        constexpr Type::B BltU  = Type::B{.funct3 = 0x6};
+        constexpr Type::B BgeU  = Type::B{.funct3 = 0x7};
+
+        // U
+        constexpr Type::U Lui  = Type::U{.Opcode = 0b0110111};
+        constexpr Type::U AuiPC  = Type::U{.Opcode = 0b0010111};
+
+        // J
+        constexpr Type::J Jal  = Type::J{};
     } // Decoder
 
 } // RISCVS
