@@ -150,35 +150,38 @@ void Lb(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = static_cast<UByte>(hart.Load<Byte>(hart[rs1] + imm));
+    std::cerr << __PRETTY_FUNCTION__ << ": " << rd << ' ' << rs1 << ' ' << imm << '\n';
+    std::cerr << "rs1_val: " << hart[rs1] << '\n';
+    hart[rd] = hart.Load(hart[rs1] + imm);
+    std::cerr << "Stored value: " << hart[rd] << '\n';
 }
 
 void Lh(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = static_cast<UHalf>(hart.Load<Half>(hart[rs1] + imm));
+    hart[rd] = hart.Load(hart[rs1] + imm); //FUCK: replace with bitwise bit setting
 }
 
 void Lw(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = static_cast<UWord>(hart.Load<Word>(hart[rs1] + imm));
+    hart[rd] = hart.Load(hart[rs1] + imm);
 }
 
 void Lbu(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = hart.Load<UByte>(hart[rs1] + imm);
+    hart[rd] = hart.Load(hart[rs1] + imm);
 }
 
 void Lhu(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = hart.Load<UHalf>(hart[rs1] + imm);
+    hart[rd] = hart.Load(hart[rs1] + imm);
 }
 
 void Sb(FUNC_SIGNATURE) {
