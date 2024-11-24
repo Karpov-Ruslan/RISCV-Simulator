@@ -39,13 +39,16 @@ public:
         MovePC(sizeof(uint32_t));
     }
 
-    template<typename T>
-    [[nodiscard]] T Load(const int32_t memoryRef) const {
-        return machine.Load<T>(memoryRef);
+    int32_t Load(const int32_t memoryRef) const {
+        return machine.Load<int32_t>(memoryRef);
+    }
+
+    int32_t M(const int32_t memoryRef) const {
+        return Load(memoryRef);
     }
 
     [[nodiscard]] uint32_t Fetch(const int32_t memoryRef) const {
-        return Load<uint32_t>(memoryRef);
+        return Load(memoryRef);
     }
 
     template<typename T>
@@ -55,7 +58,7 @@ public:
 
     void Execute() {
         std::cerr << "pc: " << pc << '\n';
-        uint32_t binInstruction = machine.Load<uint32_t>(pc);
+        uint32_t binInstruction = Load(pc);
         // std::cerr << "binInstr: " << std::bitset<32>{binInstruction} << '\n';
         Instruction instruction = Decoder::Decode(binInstruction);
         NextInstructionPC();
