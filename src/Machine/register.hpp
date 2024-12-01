@@ -11,7 +11,7 @@ public:
         ZERO,
     };
 
-    explicit Register(REGISTER_MODE mode) : mode(mode) {}
+    Register(REGISTER_MODE mode = REGISTER_MODE::DEFAULT) : mode(mode) {}
 
     Register(const Register&) = delete;
     Register& operator=(const Register&) = delete;

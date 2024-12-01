@@ -80,8 +80,7 @@ public:
     }
 
 private:
-    // TODO: FUCKFUCKFUCKFUCKFUCK (Register numba 0 is not always zero)
-    std::array<Register, NUM_REGISTER> reg{};
+    std::array<Register, NUM_REGISTER> reg{Register::REGISTER_MODE::ZERO, Register::REGISTER_MODE::DEFAULT};
     int32_t pc{};
 
     Machine& machine;
