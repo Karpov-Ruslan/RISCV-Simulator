@@ -3,7 +3,6 @@
 
 namespace RISCVS::InstructionSet {
 
-using Register = Hart::Register;
 using SRegister = std::make_signed_t<Register>;
 using URegister = std::make_unsigned_t<Register>;
 

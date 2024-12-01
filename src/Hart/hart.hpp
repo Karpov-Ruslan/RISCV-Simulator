@@ -6,12 +6,12 @@
 
 #include <machine.hpp>
 #include <Decoder.hpp>
+#include "register.hpp"
 
 namespace RISCVS {
 
 class Hart {
 public:
-    using Register = uint32_t;
     using RegisterIndex = uint16_t;
 
     constexpr static RegisterIndex NUM_REGISTER = 32U;
