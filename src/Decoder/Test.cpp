@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <Decoder.hpp>
+#include <register.hpp>
 
 #define CHECK(cond)                                                         \
     if (!(cond)) {                                                          \
@@ -115,8 +116,8 @@ namespace RISCVS {
         bool TestB( Hart& hart,
                     Type::B instr,
                     std::function<bool(Uint, Uint)> cond,
-                    Hart::Register rs1Value,
-                    Hart::Register rs2Value) {
+                    Register::RegisterType rs1Value,
+                    Register::RegisterType rs2Value) {
                 std::cerr << "---------[]---------\n";
                 RegIdx rs1Idx = 0;
                 RegIdx rs2Idx = 1;
