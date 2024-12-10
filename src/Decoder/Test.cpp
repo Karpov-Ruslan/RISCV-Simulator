@@ -37,15 +37,17 @@ namespace RISCVS {
 
         bool TestR(  Hart& hart,
                     Type::R instr,
-                    std::function<bool(Uint, Uint, Uint)> cond) {
+                    std::function<bool(Uint, Uint, Uint)> cond,
+                    Register::RegisterType rs1 = 0,
+                    Register::RegisterType rs2 = 0) {
                 std::cerr << "---------[]---------\n";
                 RegIdx rdIdx = 1;
                 RegIdx rs1Idx = 2;
                 RegIdx rs2Idx = 3;
 
                 hart[rdIdx] = GetRandValue();
-                hart[rs1Idx] = GetRandValue();
-                hart[rs2Idx] = GetRandValue();
+                hart[rs1Idx] = rs1 != 0 ? rs1 : GetRandValue();
+                hart[rs2Idx] = rs2 != 0 ? rs2 : GetRandValue();
 
                 static int testIdx = 0;
                 testIdx++;
@@ -63,13 +65,13 @@ namespace RISCVS {
 
         bool TestI(  Hart& hart,
                     Type::ILogic instr,
-                    std::function<bool(Uint, Uint, Uint)> cond) {
+                    std::function<bool(Uint, Uint, Uint)> cond, Register::RegisterType rs1 = 0) {
                 std::cerr << "---------[]---------\n";
                 RegIdx rdIdx = 1;
                 RegIdx rs1Idx = 2;
                 
                 hart[rdIdx] = GetRandValue();
-                hart[rs1Idx] = GetRandValue();
+                hart[rs1Idx] = (rs1 != 0) ? rs1 : GetRandValue();
                 Immediate imm  = GetRandValue();
 
                 static int testIdx = 0;
@@ -269,6 +271,8 @@ namespace RISCVS {
             Hart hart{machine};
 
             std::srand(0);
+            // FUCK: It's likely to use random values in tests is a bad idea
+            // e.g. it makes pain with Sll and Sra 
 
             // R
             TestR(hart, Add, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 + rs2);});
@@ -276,9 +280,9 @@ namespace RISCVS {
             TestR(hart, Xor, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 ^ rs2);});
             TestR(hart, Or, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 | rs2);});
             TestR(hart, And, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 & rs2);});
-            TestR(hart, Sll, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 << rs2);});
-            TestR(hart, Srl, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 >> rs2);});
-            TestR(hart, Sra, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 >> rs2);}); // ? msb extends
+            TestR(hart, Sll, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 << rs2);}, 58, 2);
+            TestR(hart, Srl, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 >> rs2);}, 4056, 3);
+            TestR(hart, Sra, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 >> rs2);}, 2313, 3); // ? msb extends
             TestR(hart, Slt, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 < rs2) ? 1 : 0;});
             TestR(hart, Sltu, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 < rs2) ? 1 : 0;}); // ? zero extends
 
@@ -286,6 +290,12 @@ namespace RISCVS {
             TestI(hart, AddI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 + imm);});
             TestI(hart, XorI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 ^ imm);});
             TestI(hart, OrI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 | imm);});
+            TestI(hart, AndI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 & imm);});
+            TestI(hart, SllI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 << GetField(0U, 4U, imm));}, 12);
+            TestI(hart, SrlI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 >> GetField(0U, 4U, imm));}, 12 << 10U);
+            TestI(hart, SraI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 >> GetField(0U, 4U, imm));}, 12 << 10U); // ? msb extends
+            TestI(hart, SltI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 < imm) ? 1 : 0;});
+            TestI(hart, SltIU, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 < imm) ? 1 : 0;}); // ? zero extends
 
             // ILoad
             TestI(hart, Lb, [&hart](Uint rd, Uint rs1, Uint imm){return CmpB(hart.M(rs1 + imm), rd);});

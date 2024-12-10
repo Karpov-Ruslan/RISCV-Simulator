@@ -166,14 +166,19 @@ namespace RISCVS {
             return IBuild(Opcode, funct3, rd, rs1, imm);                    \
         }
 
-        BUILD_TYPE(Logic)
         BUILD_TYPE(Load)
         BUILD_TYPE(Jump)
         
+        Uint Type::ILogic::Build(RegIdx rd, RegIdx rs1, Immediate imm) const {
+            if (useHigh) {
+                imm = GetField(0U, 4U, imm) | (highImm << 5U);
+            }
+            return IBuild(Opcode, funct3, rd, rs1, imm);
+        }
+
         Uint Type::IEnv::Build() const {
             return IBuild(Opcode, funct3, 0, 0, imm);
         }
-
 
         #undef BUILD_TYPE
 
@@ -247,6 +252,7 @@ namespace RISCVS {
         }
 
         bool IsSraI(Uint imm) {
+            std::cerr << "IsSraI: " << GetField(5U, 11U, imm) << " " << SraI.highImm << '\n'; 
             return GetField(5U, 11U, imm) == SraI.highImm;
         }
 
