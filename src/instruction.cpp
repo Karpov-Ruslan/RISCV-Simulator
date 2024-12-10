@@ -95,6 +95,9 @@ bool AddI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
+
+    std::cerr << "rs1: " << rs1 << ", imm: " << imm << '\n';
+
     hart[rd] = hart[rs1] + imm;
     return true;
 }
@@ -223,7 +226,9 @@ bool Sw(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
-    hart.Store<Word>(hart[rs1] + imm, (hart[rs2] & ((1 << (8*sizeof(Word))) - 1)));
+    std::cerr << "rs1: " << rs1 << ", rs2: " << rs2 << ", imm: " << imm << '\n';
+    hart.Store<Word>(hart[rs1] + imm, hart[rs2]);
+    // hart.Store<Word>(hart[rs1] + imm, (hart[rs2] & ((1 << (8*sizeof(Word))) - 1)));
     return true;
 }
 

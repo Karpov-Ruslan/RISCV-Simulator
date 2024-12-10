@@ -468,8 +468,9 @@ namespace RISCVS {
         }
 
         Instruction Decode(Uint binInstruction) {
-            // std::cerr << std::bitset<32>{binInstruction} << '\n';
+            std::cerr << "Instuction: " << std::bitset<32>{binInstruction} << '\n';
             Uint const opcode = GetOpcode(binInstruction);
+            std::cerr << "Opcode: " << std::bitset<6>{opcode} << '\n';
 
             switch (opcode)
             {
@@ -511,7 +512,7 @@ namespace RISCVS {
                     return DecodeJ(binInstruction);
 
                 default:
-                    std::cerr << "Unknown instruction: " << std::bitset<32>{opcode} << '\n';
+                    std::cerr << "Unknown instruction: " << std::bitset<6>{opcode} << '\n';
                     break;
             }
 

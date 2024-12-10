@@ -26,16 +26,36 @@ public:
     ~Machine();
 
     MACHINE_ATTR void Store(const int32_t memoryRef, const T data) {
-        ram.seekp(memoryRef);
+        std::cerr << "MemoryRef: " << (unsigned) memoryRef << '\n';
+        ram.seekp((unsigned) memoryRef);
+
+        if (ram.fail()) {
+            throw "seekp failed\n";
+        }
+
         using bitset = std::bitset<8*sizeof(T)>;
         T temp = data;
         ram.write(reinterpret_cast<char*>(&temp), sizeof(T));
+
+        if (ram.fail()) {
+            throw "write failed\n";
+        }
     }
 
     MACHINE_ATTR T Load(const int32_t memoryRef) {
-        ram.seekg(memoryRef);
+        ram.seekg((unsigned) memoryRef);
+
+        if (ram.fail()) {
+            throw "seekp failed\n";
+        }
+
         T ret;
         ram.read(reinterpret_cast<char*>(&ret), sizeof(T));
+
+        if (ram.fail()) {
+            throw "read failed\n";
+        }
+
         return ret;
     }
 
