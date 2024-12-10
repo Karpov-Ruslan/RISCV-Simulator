@@ -274,7 +274,14 @@ namespace RISCVS {
             TestR(hart, Add, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 + rs2);});
             TestR(hart, Sub, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 - rs2);});
             TestR(hart, Xor, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 ^ rs2);});
-            
+            TestR(hart, Or, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 | rs2);});
+            TestR(hart, And, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 & rs2);});
+            TestR(hart, Sll, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 << rs2);});
+            TestR(hart, Srl, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 >> rs2);});
+            TestR(hart, Sra, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 >> rs2);}); // ? msb extends
+            TestR(hart, Slt, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 < rs2) ? 1 : 0;});
+            TestR(hart, Sltu, [](Uint rd, Uint rs1, Uint rs2){return rd == (rs1 < rs2) ? 1 : 0;}); // ? zero extends
+
             // ILogic
             TestI(hart, AddI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 + imm);});
             TestI(hart, XorI, [](Uint rd, Uint rs1, Uint imm){return rd == (rs1 ^ imm);});

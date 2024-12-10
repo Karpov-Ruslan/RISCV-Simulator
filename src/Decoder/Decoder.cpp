@@ -233,6 +233,7 @@ namespace RISCVS {
                 CASE(Or)
                 CASE(And)
                 CASE(Sll)
+                CASE(Srl)
                 CASE(Sra)
                 CASE(Slt)
                 CASE(Sltu)           
