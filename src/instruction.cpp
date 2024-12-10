@@ -3,9 +3,8 @@
 
 namespace RISCVS::InstructionSet {
 
-using Register = Hart::Register;
-using SRegister = std::make_signed_t<Register>;
-using URegister = std::make_unsigned_t<Register>;
+using SRegister = std::make_signed_t<Register::RegisterType>;
+using URegister = std::make_unsigned_t<Register::RegisterType>;
 
 using SImmediate = std::make_signed_t<Immediate>;
 using UImmediate = std::make_unsigned_t<Immediate>;
@@ -72,7 +71,7 @@ bool Sra(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
-    hart[rd] = static_cast<Register>(static_cast<SRegister>(hart[rs1]) >> hart[rs2]);
+    hart[rd] = static_cast<SRegister>(hart[rs1]) >> hart[rs2];
     return true;
 }
 
@@ -144,7 +143,7 @@ bool SraI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = static_cast<Register>(static_cast<SRegister>(hart[rs1]) >> (imm & 0b11111U));
+    hart[rd] = static_cast<SRegister>(hart[rs1]) >> (imm & 0b11111U);
     return true;
 }
 

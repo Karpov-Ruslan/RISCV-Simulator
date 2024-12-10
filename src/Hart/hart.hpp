@@ -6,12 +6,12 @@
 
 #include <machine.hpp>
 #include <Decoder.hpp>
+#include "register.hpp"
 
 namespace RISCVS {
 
 class Hart {
 public:
-    using Register = uint32_t;
     using RegisterIndex = uint16_t;
 
     constexpr static RegisterIndex NUM_REGISTER = 32U;
@@ -82,8 +82,7 @@ public:
     }
 
 private:
-    // TODO: FUCKFUCKFUCKFUCKFUCK (Register numba 0 is not always zero)
-    std::array<Register, NUM_REGISTER> reg{};
+    std::array<Register, NUM_REGISTER> reg{Register::REGISTER_MODE::ZERO, Register::REGISTER_MODE::DEFAULT};
     int32_t pc{};
 
     Machine& machine;
