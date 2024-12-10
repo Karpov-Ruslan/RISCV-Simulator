@@ -87,7 +87,7 @@ namespace RISCVS {
                         PutField(25U, 30U, immBodyPart2) |
                         PutField(7U, 7U, immBodyPart3) |
                         PutField(31U, 31U, sign);
-            return imm;
+            return res;
         }
 
         Uint GetImmTypeU(Uint code) {
@@ -498,6 +498,7 @@ namespace RISCVS {
 
                 case Type::J::Opcode:
                     std::cerr << "J\n";
+                    std::cerr << std::bitset<32>{opcode} << '\n';
                     return DecodeJ(binInstruction);
 
                 default:

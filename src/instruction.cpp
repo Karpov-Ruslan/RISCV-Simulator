@@ -11,286 +11,321 @@ using UImmediate = std::make_unsigned_t<Immediate>;
 
 using RegIdx = Hart::RegisterIndex;
 
-void Add(FUNC_SIGNATURE) {
+bool Add(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = hart[rs1] + hart[rs2];
+    return true;
 }
 
-void Sub(FUNC_SIGNATURE) {
+bool Sub(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = hart[rs1] - hart[rs2];
+    return true;
 }
 
-void Xor(FUNC_SIGNATURE) {
+bool Xor(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = hart[rs1] ^ hart[rs2];
+    return true;
 }
 
-void Or(FUNC_SIGNATURE) {
+bool Or(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = hart[rs1] | hart[rs2];
+    return true;
 }
 
-void And(FUNC_SIGNATURE) {
+bool And(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = hart[rs1] & hart[rs2];
+    return true;
 }
 
-void Sll(FUNC_SIGNATURE) {
+bool Sll(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = hart[rs1] << hart[rs2];
+    return true;
 }
 
-void Srl(FUNC_SIGNATURE) {
+bool Srl(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = hart[rs1] >> hart[rs2];
+    return true;
 }
 
-void Sra(FUNC_SIGNATURE) {
+bool Sra(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = static_cast<SRegister>(hart[rs1]) >> hart[rs2];
+    return true;
 }
 
-void Slt(FUNC_SIGNATURE) {
+bool Slt(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = (static_cast<SRegister>(hart[rs1]) < static_cast<SRegister>(hart[rs2])) ? 1 : 0;
+    return true;
 }
 
-void Sltu(FUNC_SIGNATURE) {
+bool Sltu(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     RegIdx rs2 = std::get<RegIdx>(param3);
     hart[rd] = (static_cast<URegister>(hart[rs1]) < static_cast<URegister>(hart[rs2])) ? 1 : 0;
+    return true;
 }
 
-void AddI(FUNC_SIGNATURE) {
+bool AddI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
-    std::cerr << rd << ' ' << rs1 << ' ' << imm << '\n';
     hart[rd] = hart[rs1] + imm;
+    return true;
 }
 
-void XorI(FUNC_SIGNATURE) {
+bool XorI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart[rs1] ^ imm;
+    return true;
 }
 
-void OrI(FUNC_SIGNATURE) {
+bool OrI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart[rs1] | imm;
+    return true;
 }
 
-void AndI(FUNC_SIGNATURE) {
+bool AndI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart[rs1] & imm;
+    return true;
 }
 
-void SllI(FUNC_SIGNATURE) {
+bool SllI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart[rs1] << (imm & 0b11111U);
+    return true;
 }
 
-void SrlI(FUNC_SIGNATURE) {
+bool SrlI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart[rs1] >> (imm & 0b11111U);
+    return true;
 }
 
-void SraI(FUNC_SIGNATURE) {
+bool SraI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = static_cast<SRegister>(hart[rs1]) >> (imm & 0b11111U);
+    return true;
 }
 
-void SltI(FUNC_SIGNATURE) {
+bool SltI(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = (static_cast<SRegister>(hart[rs1]) < static_cast<SImmediate>(imm)) ? 1 : 0;
+    return true;
 }
 
-void SltIU(FUNC_SIGNATURE) {
+bool SltIU(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = (static_cast<URegister>(hart[rs1]) < static_cast<UImmediate>(imm)) ? 1 : 0;
+    return true;
 }
 
-void Lb(FUNC_SIGNATURE) {
-    RegIdx rd = std::get<RegIdx>(param1);
-    RegIdx rs1 = std::get<RegIdx>(param2);
-    Immediate imm = std::get<Immediate>(param3);
-    std::cerr << __PRETTY_FUNCTION__ << ": " << rd << ' ' << rs1 << ' ' << imm << '\n';
-    std::cerr << "rs1_val: " << hart[rs1] << '\n';
-    hart[rd] = hart.Load(hart[rs1] + imm);
-    std::cerr << "Stored value: " << hart[rd] << '\n';
-}
-
-void Lh(FUNC_SIGNATURE) {
-    RegIdx rd = std::get<RegIdx>(param1);
-    RegIdx rs1 = std::get<RegIdx>(param2);
-    Immediate imm = std::get<Immediate>(param3);
-    hart[rd] = hart.Load(hart[rs1] + imm); //FUCK: replace with bitwise bit setting
-}
-
-void Lw(FUNC_SIGNATURE) {
+bool Lb(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart.Load(hart[rs1] + imm);
+    return true;
 }
 
-void Lbu(FUNC_SIGNATURE) {
+bool Lh(FUNC_SIGNATURE) {
+    RegIdx rd = std::get<RegIdx>(param1);
+    RegIdx rs1 = std::get<RegIdx>(param2);
+    Immediate imm = std::get<Immediate>(param3);
+    hart[rd] = hart.Load(hart[rs1] + imm); //FUCK: replace with bitwise bit setting: only lower part
+    return true;
+}
+
+bool Lw(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart.Load(hart[rs1] + imm);
+    return true;
 }
 
-void Lhu(FUNC_SIGNATURE) {
+bool Lbu(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart.Load(hart[rs1] + imm);
+    return true;
 }
 
-void Sb(FUNC_SIGNATURE) {
+bool Lhu(FUNC_SIGNATURE) {
+    RegIdx rd = std::get<RegIdx>(param1);
+    RegIdx rs1 = std::get<RegIdx>(param2);
+    Immediate imm = std::get<Immediate>(param3);
+    hart[rd] = hart.Load(hart[rs1] + imm);
+    return true;
+}
+
+bool Sb(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart.Store<Byte>(hart[rs1] + imm, (hart[rs2] & ((1 << (8*sizeof(Byte))) - 1)));
+    return true;
 }
 
-void Sh(FUNC_SIGNATURE) {
+bool Sh(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart.Store<Half>(hart[rs1] + imm, (hart[rs2] & ((1 << (8*sizeof(Half))) - 1)));
+    return true;
 }
 
-void Sw(FUNC_SIGNATURE) {
+bool Sw(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart.Store<Word>(hart[rs1] + imm, (hart[rs2] & ((1 << (8*sizeof(Word))) - 1)));
+    return true;
 }
 
-void Beq(FUNC_SIGNATURE) {
+bool Beq(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     if (hart[rs1] == hart[rs2]) {
         hart.MovePC(imm);
     }
+    return false;
 }
 
-void Bne(FUNC_SIGNATURE) {
+bool Bne(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     if (hart[rs1] != hart[rs2]) {
         hart.MovePC(imm);
     }
+    return false;
 }
 
-void Blt(FUNC_SIGNATURE) {
+bool Blt(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     if (static_cast<SRegister>(hart[rs1]) < static_cast<SRegister>(hart[rs2])) {
         hart.MovePC(imm);
     }
+    return false;
 }
 
-void Bge(FUNC_SIGNATURE) {
+bool Bge(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     if (static_cast<SRegister>(hart[rs1]) >= static_cast<SRegister>(hart[rs2])) {
         hart.MovePC(imm);
     }
+    return false;
 }
 
-void BltU(FUNC_SIGNATURE) {
+bool BltU(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     if (hart[rs1] < hart[rs2]) {
         hart.MovePC(imm);
     }
+    return false;
 }
 
-void BgeU(FUNC_SIGNATURE) {
+bool BgeU(FUNC_SIGNATURE) {
     RegIdx rs1 = std::get<RegIdx>(param1);
     RegIdx rs2 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     if (hart[rs1] >= hart[rs2]) {
         hart.MovePC(imm);
     }
+    return false;
 }
 
-void Jal(FUNC_SIGNATURE) {
+bool Jal(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     Immediate imm = std::get<Immediate>(param2);
     hart[rd] = hart.GetPC() + 4;
     hart.MovePC(imm);
+    return false;
 }
 
-void Jalr(FUNC_SIGNATURE) {
+bool Jalr(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     RegIdx rs1 = std::get<RegIdx>(param2);
     Immediate imm = std::get<Immediate>(param3);
     hart[rd] = hart.GetPC() + 4;
     hart.SetPC(hart[rs1] + imm);
+    return false;
 }
 
-void Lui(FUNC_SIGNATURE) {
+bool Lui(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     Immediate imm = std::get<Immediate>(param2);
     hart[rd] = imm << 12;
+    return true;
 }
 
-void AuiPC(FUNC_SIGNATURE) {
+bool AuiPC(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
     Immediate imm = std::get<Immediate>(param2);
     hart[rd] = hart.GetPC() + (imm << 12);
+    return false;
 }
 
-void ECall(FUNC_SIGNATURE) {
+bool ECall(FUNC_SIGNATURE) {
     // TODO: I donnow
+    return false;
 }
 
-void EBreak(FUNC_SIGNATURE) {
+bool EBreak(FUNC_SIGNATURE) {
     // TODO: I donnow
+    return false;
 }
 
 
