@@ -169,7 +169,11 @@ namespace RISCVS {
         BUILD_TYPE(Logic)
         BUILD_TYPE(Load)
         BUILD_TYPE(Jump)
-        BUILD_TYPE(Env)
+        
+        Uint Type::IEnv::Build() const {
+            return IBuild(Opcode, funct3, 0, 0, imm);
+        }
+
 
         #undef BUILD_TYPE
 
@@ -450,7 +454,7 @@ namespace RISCVS {
         Instruction DecodeJ(Uint binInstruction) {
             RegIdx rd = GetRd(binInstruction);
             Immediate imm = GetImmTypeJ(binInstruction);
-
+            std::cerr << "Jal\n";
             return Instruction{                
                 .PFN_Instruction = InstructionSet::Jal, 
                 .param1 = rd,
@@ -498,7 +502,6 @@ namespace RISCVS {
 
                 case Type::J::Opcode:
                     std::cerr << "J\n";
-                    std::cerr << std::bitset<32>{opcode} << '\n';
                     return DecodeJ(binInstruction);
 
                 default:

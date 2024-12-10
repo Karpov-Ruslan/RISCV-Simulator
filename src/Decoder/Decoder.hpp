@@ -62,7 +62,7 @@ namespace RISCVS {
                 const Uint funct3;
                 const Uint imm;
 
-                Uint Build(RegIdx rd, RegIdx rs1, Immediate imm) const;
+                Uint Build() const;
             };
 
             struct S {

@@ -320,11 +320,13 @@ bool AuiPC(FUNC_SIGNATURE) {
 
 bool ECall(FUNC_SIGNATURE) {
     // TODO: I donnow
+    hart.Stop();
     return false;
 }
 
 bool EBreak(FUNC_SIGNATURE) {
     // TODO: I donnow
+    hart.Stop();
     return false;
 }
 

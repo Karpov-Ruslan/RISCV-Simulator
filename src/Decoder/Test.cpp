@@ -26,7 +26,7 @@ namespace {
     }
 
     int32_t GetRandAddrShift() {
-        return rand() % MaxAddrShift;
+        return (rand() % MaxAddrShift) & (~1);
     }
 
 } // anon namespace
@@ -125,7 +125,7 @@ namespace RISCVS {
                 hart[rs1Idx] = rs1Value;
                 hart[rs2Idx] = rs2Value;
 
-                Immediate imm  = GetRandAddrShift() & (~1); // wrt to immediate B-format
+                Immediate imm  = GetRandAddrShift();
 
                 static int testIdx = 0;
                 testIdx++;
@@ -187,6 +187,66 @@ namespace RISCVS {
                 return true;
         }
 
+        bool TestJal(Hart& hart) {
+                std::cerr << "---------[]---------\n";
+                RegIdx rdIdx = 1;
+                Immediate imm = GetRandAddrShift();
+
+                static int testIdx = 0;
+                testIdx++;
+
+                auto testInstr = Jal.Build(rdIdx, imm);
+                auto pc = hart.GetPC();
+                hart.Store(pc, testInstr);
+
+                hart.Execute(true);
+
+                CHECK(hart[rdIdx] == (pc + 4) && hart.GetPC() == (pc + imm));
+
+                return true;
+        }
+
+        bool TestJalr(Hart& hart) {
+                std::cerr << "---------[]---------\n";
+                RegIdx rdIdx = 1;
+                RegIdx rs1Idx = 2;
+
+                hart[rs1Idx] = GetRandAddr();
+                Immediate imm = GetRandAddrShift();
+
+                static int testIdx = 0;
+                testIdx++;
+
+                auto testInstr = Jalr.Build(rdIdx, rs1Idx, imm);
+                auto pc = hart.GetPC();
+                hart.Store(pc, testInstr);
+
+                hart.Execute(true);
+
+                CHECK(hart[rdIdx] == (pc + 4) && hart.GetPC() == (hart[rs1Idx] + imm));
+
+                return true;
+        }
+
+        bool TestI( Hart& hart,
+                    Type::IEnv instr) {
+                std::cerr << "---------[]---------\n";
+
+                static int testIdx = 0;
+                testIdx++;
+
+                auto testInstr = instr.Build();
+                auto pc = hart.GetPC();
+                hart.Store(pc, testInstr);
+
+                hart.Execute();
+
+                CHECK(hart.IsStop() == true);
+                hart.Run();
+
+                return true;
+        }
+
         bool Cmp(int32_t lhs, int32_t rhs, int32_t bits = 32) {
             int32_t mask = Mask(0, bits - 1);
             return (lhs & mask) == (rhs & mask);
@@ -225,12 +285,6 @@ namespace RISCVS {
             TestI(hart, Lh, [&hart](Uint rd, Uint rs1, Uint imm){return CmpH(hart.M(rs1 + imm), rd);});
             TestI(hart, Lw, [&hart](Uint rd, Uint rs1, Uint imm){return CmpW(hart.M(rs1 + imm), rd);});
 
-            // IJump
-                // jalr
-
-            // IEnv
-                // ebreak
-
             // S
             TestS(hart, Sb, [&hart](Uint rs1, Uint rs2, Uint imm){return CmpB(hart.M(rs1 + imm), rs2);});
             TestS(hart, Sh, [&hart](Uint rs1, Uint rs2, Uint imm){return CmpH(hart.M(rs1 + imm), rs2);});
@@ -249,12 +303,17 @@ namespace RISCVS {
             // U
             TestU(hart, Lui, [&hart](Uint rd, Uint imm){return rd == (imm << 12);});
             TestU(hart, AuiPC, [&hart](Uint rd, Uint imm){return rd == (hart.GetPC() + (imm << 12));});
-                // lui
-                // auipc
 
             // J
-                // jal
+            TestJal(hart);
             
+            // IJump
+            TestJalr(hart);
+
+            // IEnv
+            TestI(hart, ECall);
+            TestI(hart, EBreak);
+
             return 0; // return number of passed tests
         }
 
