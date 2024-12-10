@@ -141,6 +141,31 @@ namespace RISCVS {
                 return true;
         }
 
+        bool TestS( Hart& hart,
+                    Type::S instr,
+                    std::function<bool(Uint, Uint, Uint)> cond) {
+                std::cerr << "---------[]---------\n";
+                RegIdx rs1Idx = 1;
+                RegIdx rs2Idx = 2;
+                
+                hart[rs1Idx] = GetRandAddr();
+                hart[rs2Idx] = GetRandValue();
+                Immediate imm  = GetRandAddrShift();
+
+                static int testIdx = 0;
+                testIdx++;
+
+                auto testInstr = instr.Build(rs1Idx, rs2Idx, imm);
+                auto pc = hart.GetPC();
+                hart.Store(pc, testInstr);
+
+                hart.Execute();
+
+                CHECK(cond(hart[rs1Idx], hart[rs2Idx], imm));
+
+                return true;
+        }
+
         bool Cmp(int32_t lhs, int32_t rhs, int32_t bits = 32) {
             int32_t mask = Mask(0, bits - 1);
             return (lhs & mask) == (rhs & mask);
@@ -186,9 +211,9 @@ namespace RISCVS {
                 // ebreak
 
             // S
-                // sb
-                // sh
-                // sw
+            TestS(hart, Sb, [&hart](Uint rs1, Uint rs2, Uint imm){return CmpB(hart.M(rs1 + imm), rs2);});
+            TestS(hart, Sh, [&hart](Uint rs1, Uint rs2, Uint imm){return CmpH(hart.M(rs1 + imm), rs2);});
+            TestS(hart, Sw, [&hart](Uint rs1, Uint rs2, Uint imm){return CmpW(hart.M(rs1 + imm), rs2);});
 
             // B
             TestB(hart, Beq, [&hart](Uint rs1, Uint rs2){return (rs1 == rs2);}, 0, 0);
