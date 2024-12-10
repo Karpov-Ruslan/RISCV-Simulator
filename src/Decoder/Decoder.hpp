@@ -17,6 +17,9 @@ namespace RISCVS {
             return upperBound - lowerBound;
         };
 
+        Uint GetField(Uint startBit, Uint endBit, Uint code);
+        Uint PutField(Uint startBit, Uint endBit, Uint code);
+
         int TestDecoder();
 
         Uint GetOpcode(Uint code);
@@ -39,6 +42,7 @@ namespace RISCVS {
                 static constexpr Uint Opcode = 0b0010011;
                 const Uint funct3;
                 const Uint highImm;
+                const bool useHigh = false;
 
                 Uint Build(RegIdx rd, RegIdx rs1, Immediate imm) const;
             };
@@ -62,7 +66,7 @@ namespace RISCVS {
                 const Uint funct3;
                 const Uint imm;
 
-                Uint Build(RegIdx rd, RegIdx rs1, Immediate imm) const;
+                Uint Build() const;
             };
 
             struct S {
@@ -110,9 +114,9 @@ namespace RISCVS {
         constexpr Type::ILogic XorI  = Type::ILogic{.funct3 = 0x4};
         constexpr Type::ILogic OrI   = Type::ILogic{.funct3 = 0x6};
         constexpr Type::ILogic AndI  = Type::ILogic{.funct3 = 0x7};
-        constexpr Type::ILogic SllI  = Type::ILogic{.funct3 = 0x1, .highImm = 0x00};
-        constexpr Type::ILogic SrlI  = Type::ILogic{.funct3 = 0x5, .highImm = 0x00};
-        constexpr Type::ILogic SraI  = Type::ILogic{.funct3 = 0x5, .highImm = 0x20};
+        constexpr Type::ILogic SllI  = Type::ILogic{.funct3 = 0x1, .highImm = 0x00, .useHigh = true};
+        constexpr Type::ILogic SrlI  = Type::ILogic{.funct3 = 0x5, .highImm = 0x00, .useHigh = true};
+        constexpr Type::ILogic SraI  = Type::ILogic{.funct3 = 0x5, .highImm = 0x20, .useHigh = true};
         constexpr Type::ILogic SltI  = Type::ILogic{.funct3 = 0x2};
         constexpr Type::ILogic SltIU = Type::ILogic{.funct3 = 0x3};
 

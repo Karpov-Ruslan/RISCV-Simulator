@@ -92,12 +92,12 @@ namespace RISCVS {
 
         Uint GetImmTypeU(Uint code) {
             Uint imm = GetField(12U, 30U, code);
-            imm <<= 12U;
             return imm;
         }
 
         Uint PutImmTypeU(Immediate imm) {
-            return imm & (~Mask(0U, 11U));
+            Uint res = PutField(12U, 30U, imm);
+            return res;
         }
 
         Uint GetImmTypeJ(Uint code) {
@@ -166,10 +166,19 @@ namespace RISCVS {
             return IBuild(Opcode, funct3, rd, rs1, imm);                    \
         }
 
-        BUILD_TYPE(Logic)
         BUILD_TYPE(Load)
         BUILD_TYPE(Jump)
-        BUILD_TYPE(Env)
+        
+        Uint Type::ILogic::Build(RegIdx rd, RegIdx rs1, Immediate imm) const {
+            if (useHigh) {
+                imm = GetField(0U, 4U, imm) | (highImm << 5U);
+            }
+            return IBuild(Opcode, funct3, rd, rs1, imm);
+        }
+
+        Uint Type::IEnv::Build() const {
+            return IBuild(Opcode, funct3, 0, 0, imm);
+        }
 
         #undef BUILD_TYPE
 
@@ -229,6 +238,7 @@ namespace RISCVS {
                 CASE(Or)
                 CASE(And)
                 CASE(Sll)
+                CASE(Srl)
                 CASE(Sra)
                 CASE(Slt)
                 CASE(Sltu)           
@@ -450,7 +460,7 @@ namespace RISCVS {
         Instruction DecodeJ(Uint binInstruction) {
             RegIdx rd = GetRd(binInstruction);
             Immediate imm = GetImmTypeJ(binInstruction);
-
+            std::cerr << "Jal\n";
             return Instruction{                
                 .PFN_Instruction = InstructionSet::Jal, 
                 .param1 = rd,
@@ -498,7 +508,6 @@ namespace RISCVS {
 
                 case Type::J::Opcode:
                     std::cerr << "J\n";
-                    std::cerr << std::bitset<32>{opcode} << '\n';
                     return DecodeJ(binInstruction);
 
                 default:

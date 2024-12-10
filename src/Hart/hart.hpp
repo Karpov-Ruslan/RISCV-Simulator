@@ -56,14 +56,16 @@ public:
         machine.Store<T>(memoryRef, value);
     }
 
-    void Execute() {
-        uint32_t binInstruction = Load(pc);
-        // std::cerr << "binInstr: " << std::bitset<32>{binInstruction} << '\n';
-        Instruction instruction = Decoder::Decode(binInstruction);
-        bool shiftPC = instruction.PFN_Instruction(*this, instruction.param1, instruction.param2, instruction.param3);
-        
-        if (shiftPC) {
-            NextInstructionPC();
+    void Execute(bool requireSkip = false) {
+        if (!IsStop()) {
+            uint32_t binInstruction = Load(pc);
+            // std::cerr << "binInstr: " << std::bitset<32>{binInstruction} << '\n';
+            Instruction instruction = Decoder::Decode(binInstruction);
+            bool shiftPC = instruction.PFN_Instruction(*this, instruction.param1, instruction.param2, instruction.param3);
+            
+            if (shiftPC && !requireSkip) {
+                NextInstructionPC();
+            }
         }
     }
 
@@ -81,11 +83,24 @@ public:
         std::cout << "++++++++++++++++++++++++++\n";
     }
 
+    void Stop() {
+        isHalt = true;
+    }
+
+    void Run() {
+        isHalt = false;
+    }
+
+    bool IsStop() const {
+        return isHalt;
+    }
+
 private:
     std::array<Register, NUM_REGISTER> reg{Register::REGISTER_MODE::ZERO, Register::REGISTER_MODE::DEFAULT};
     int32_t pc{};
 
     Machine& machine;
+    bool isHalt = false;
 };
 
 }
