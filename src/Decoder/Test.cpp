@@ -39,9 +39,9 @@ namespace RISCVS {
                     Type::R instr,
                     std::function<bool(Uint, Uint, Uint)> cond) {
                 std::cerr << "---------[]---------\n";
-                RegIdx rdIdx = 0;
-                RegIdx rs1Idx = 1;
-                RegIdx rs2Idx = 2;
+                RegIdx rdIdx = 1;
+                RegIdx rs1Idx = 2;
+                RegIdx rs2Idx = 3;
 
                 hart[rdIdx] = GetRandValue();
                 hart[rs1Idx] = GetRandValue();
@@ -65,8 +65,8 @@ namespace RISCVS {
                     Type::ILogic instr,
                     std::function<bool(Uint, Uint, Uint)> cond) {
                 std::cerr << "---------[]---------\n";
-                RegIdx rdIdx = 0;
-                RegIdx rs1Idx = 1;
+                RegIdx rdIdx = 1;
+                RegIdx rs1Idx = 2;
                 
                 hart[rdIdx] = GetRandValue();
                 hart[rs1Idx] = GetRandValue();
@@ -90,8 +90,8 @@ namespace RISCVS {
                     Type::ILoad instr,
                     std::function<bool(Uint, Uint, Uint)> cond) {
                 std::cerr << "---------[]---------\n";
-                RegIdx rdIdx = 0;
-                RegIdx rs1Idx = 1;
+                RegIdx rdIdx = 1;
+                RegIdx rs1Idx = 2;
                 
                 hart[rdIdx] = GetRandValue();
                 hart[rs1Idx] = GetRandAddr();
@@ -119,8 +119,8 @@ namespace RISCVS {
                     Register::RegisterType rs1Value,
                     Register::RegisterType rs2Value) {
                 std::cerr << "---------[]---------\n";
-                RegIdx rs1Idx = 0;
-                RegIdx rs2Idx = 1;
+                RegIdx rs1Idx = 1;
+                RegIdx rs2Idx = 2;
                 
                 hart[rs1Idx] = rs1Value;
                 hart[rs2Idx] = rs2Value;
