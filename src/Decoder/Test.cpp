@@ -189,10 +189,10 @@ namespace RISCVS {
                 return true;
         }
 
-        bool TestJal(Hart& hart) {
+        bool TestJal(Hart& hart, Immediate imm = 0) {
                 std::cerr << "---------[]---------\n";
                 RegIdx rdIdx = 1;
-                Immediate imm = GetRandAddrShift();
+                imm = imm != 0 ? imm : GetRandAddrShift();
 
                 static int testIdx = 0;
                 testIdx++;
@@ -208,13 +208,13 @@ namespace RISCVS {
                 return true;
         }
 
-        bool TestJalr(Hart& hart) {
+        bool TestJalr(Hart& hart, Immediate imm = 0) {
                 std::cerr << "---------[]---------\n";
                 RegIdx rdIdx = 1;
                 RegIdx rs1Idx = 2;
 
                 hart[rs1Idx] = GetRandAddr();
-                Immediate imm = GetRandAddrShift();
+                imm = imm != 0 ? imm : GetRandAddrShift();
 
                 static int testIdx = 0;
                 testIdx++;
@@ -301,6 +301,8 @@ namespace RISCVS {
             TestI(hart, Lb, [&hart](Uint rd, Uint rs1, Uint imm){return CmpB(hart.M(rs1 + imm), rd);});
             TestI(hart, Lh, [&hart](Uint rd, Uint rs1, Uint imm){return CmpH(hart.M(rs1 + imm), rd);});
             TestI(hart, Lw, [&hart](Uint rd, Uint rs1, Uint imm){return CmpW(hart.M(rs1 + imm), rd);});
+            TestI(hart, Lbu, [&hart](Uint rd, Uint rs1, Uint imm){return CmpB(hart.M(rs1 + imm), rd);}); // ? zero extends
+            TestI(hart, Lhu, [&hart](Uint rd, Uint rs1, Uint imm){return CmpH(hart.M(rs1 + imm), rd);}); // ? zero extends
 
             // S
             TestS(hart, Sb, [&hart](Uint rs1, Uint rs2, Uint imm){return CmpB(hart.M(rs1 + imm), rs2);});
@@ -317,15 +319,24 @@ namespace RISCVS {
             TestB(hart, Blt, [&hart](Uint rs1, Uint rs2){return (rs1 < rs2);}, 0, 1);
             TestB(hart, Blt, [&hart](Uint rs1, Uint rs2){return (rs1 < rs2);}, 0, 0);
             
+            TestB(hart, Bge, [&hart](Uint rs1, Uint rs2){return (rs1 >= rs2);}, 2, 1);
+            TestB(hart, Bge, [&hart](Uint rs1, Uint rs2){return (rs1 >= rs2);}, 2, 3);
+            
+            TestB(hart, BltU, [&hart](Uint rs1, Uint rs2){return (rs1 < rs2);}, 0, 1);
+            TestB(hart, BltU, [&hart](Uint rs1, Uint rs2){return (rs1 < rs2);}, 0, 0);
+            
+            TestB(hart, BgeU, [&hart](Uint rs1, Uint rs2){return (rs1 >= rs2);}, 2, 1);
+            TestB(hart, BgeU, [&hart](Uint rs1, Uint rs2){return (rs1 >= rs2);}, 2, 3);
+
             // U
             TestU(hart, Lui, [&hart](Uint rd, Uint imm){return rd == (imm << 12);});
             TestU(hart, AuiPC, [&hart](Uint rd, Uint imm){return rd == (hart.GetPC() + (imm << 12));});
 
             // J
-            TestJal(hart);
+            TestJal(hart, 12);
             
             // IJump
-            TestJalr(hart);
+            TestJalr(hart, 12);
 
             // IEnv
             TestI(hart, ECall);

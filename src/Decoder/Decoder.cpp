@@ -252,7 +252,6 @@ namespace RISCVS {
         }
 
         bool IsSraI(Uint imm) {
-            std::cerr << "IsSraI: " << GetField(5U, 11U, imm) << " " << SraI.highImm << '\n'; 
             return GetField(5U, 11U, imm) == SraI.highImm;
         }
 
