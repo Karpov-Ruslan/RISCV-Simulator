@@ -57,12 +57,14 @@ public:
     }
 
     void Execute() {
-        std::cerr << "pc: " << pc << '\n';
         uint32_t binInstruction = Load(pc);
         // std::cerr << "binInstr: " << std::bitset<32>{binInstruction} << '\n';
         Instruction instruction = Decoder::Decode(binInstruction);
-        NextInstructionPC();
-        instruction.PFN_Instruction(*this, instruction.param1, instruction.param2, instruction.param3);
+        bool shiftPC = instruction.PFN_Instruction(*this, instruction.param1, instruction.param2, instruction.param3);
+        
+        if (shiftPC) {
+            NextInstructionPC();
+        }
     }
 
     void Dump(int max_reg = 32) const {
