@@ -56,13 +56,13 @@ public:
         machine.Store<T>(memoryRef, value);
     }
 
-    void Execute() {
+    void Execute(bool requireSkip = false) {
         uint32_t binInstruction = Load(pc);
         // std::cerr << "binInstr: " << std::bitset<32>{binInstruction} << '\n';
         Instruction instruction = Decoder::Decode(binInstruction);
         bool shiftPC = instruction.PFN_Instruction(*this, instruction.param1, instruction.param2, instruction.param3);
         
-        if (shiftPC) {
+        if (shiftPC && !requireSkip) {
             NextInstructionPC();
         }
     }

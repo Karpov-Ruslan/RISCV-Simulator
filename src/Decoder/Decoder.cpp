@@ -92,12 +92,12 @@ namespace RISCVS {
 
         Uint GetImmTypeU(Uint code) {
             Uint imm = GetField(12U, 30U, code);
-            imm <<= 12U;
             return imm;
         }
 
         Uint PutImmTypeU(Immediate imm) {
-            return imm & (~Mask(0U, 11U));
+            Uint res = PutField(12U, 30U, imm);
+            return res;
         }
 
         Uint GetImmTypeJ(Uint code) {

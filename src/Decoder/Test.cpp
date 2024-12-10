@@ -166,6 +166,27 @@ namespace RISCVS {
                 return true;
         }
 
+        bool TestU( Hart& hart,
+                    Type::U instr,
+                    std::function<bool(Uint, Uint)> cond) {
+                std::cerr << "---------[]---------\n";
+                RegIdx rdIdx = 1;
+                Immediate imm = GetRandValue();
+
+                static int testIdx = 0;
+                testIdx++;
+
+                auto testInstr = instr.Build(rdIdx, imm);
+                auto pc = hart.GetPC();
+                hart.Store(pc, testInstr);
+
+                hart.Execute(true);
+
+                CHECK(cond(hart[rdIdx], imm));
+
+                return true;
+        }
+
         bool Cmp(int32_t lhs, int32_t rhs, int32_t bits = 32) {
             int32_t mask = Mask(0, bits - 1);
             return (lhs & mask) == (rhs & mask);
@@ -226,6 +247,8 @@ namespace RISCVS {
             TestB(hart, Blt, [&hart](Uint rs1, Uint rs2){return (rs1 < rs2);}, 0, 0);
             
             // U
+            TestU(hart, Lui, [&hart](Uint rd, Uint imm){return rd == (imm << 12);});
+            TestU(hart, AuiPC, [&hart](Uint rd, Uint imm){return rd == (hart.GetPC() + (imm << 12));});
                 // lui
                 // auipc
 
