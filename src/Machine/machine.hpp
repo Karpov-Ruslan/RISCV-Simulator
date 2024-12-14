@@ -13,6 +13,8 @@
 
 #include <defines.hpp>
 
+// #define MMAP
+
 namespace RISCVS {
 
 #define MACHINE_ATTR template<typename T>
@@ -22,6 +24,8 @@ public:
     using MemoryRefType = int32_t;
 
     Machine();
+
+    Machine(std::string_view code_path, uint32_t loadOffset);
 
     ~Machine();
 
@@ -156,47 +160,50 @@ private:
 
     template <typename T, bool allowSystemMemoryStore = true> void PhysicalStore(const MemoryRefType physicalMemoryAddress, const T& data) {
         // std::cerr << "MemoryRef: " << static_cast<uint32_t>(physicalMemoryAddress) << '\n';
-        ram.seekp(static_cast<uint32_t>(physicalMemoryAddress));
+        if (useFile_) {
+            ram.seekp((unsigned) physicalMemoryAddress);
 
-        if (ram.fail()) {
-            throw std::runtime_error("seekp failed\n");
-        }
-
-        using bitset = std::bitset<8*sizeof(T)>;
-        ram.write(reinterpret_cast<const char*>(&data), sizeof(T));
-
-        if constexpr (allowSystemMemoryStore) {
-            if (physicalMemoryAddress >= SYSTEM_MEMORY_ADDR && physicalMemoryAddress < SYSTEM_MEMORY_ADDR + SYSTEM_MEMORY_LENGTH) {
-                throw std::runtime_error("Sytem memory store is unacceptable");
+            if (ram.fail()) {
+                throw "seekp failed\n";
             }
-        }
 
-        if (ram.fail()) {
-            throw std::runtime_error("write failed\n");
+            using bitset = std::bitset<8*sizeof(T)>;
+            T temp = data;
+            ram.write(reinterpret_cast<char*>(&temp), sizeof(T));
+
+            if (ram.fail()) {
+                throw "write failed\n";
+            }
+        } else {
+            // std::cerr << "Read: " << mmapRam_ + memoryRef/4U + loadOffset_/4U << '\n';
+            auto input = reinterpret_cast<T*>(&mmapRam_[physicalMemoryAddress]);
+            *input = data;
         }
     }
 
     MACHINE_ATTR T PhysicalLoad(const MemoryRefType physicalMemoryAddress) {
-        ram.seekg(static_cast<uint32_t>(physicalMemoryAddress));
+        if (useFile_) {
+            ram.seekg((unsigned) physicalMemoryAddress);
 
-        if (ram.fail()) {
-            throw std::runtime_error("seekp failed\n");
-        }
-
-        T ret;
-        ram.read(reinterpret_cast<char*>(&ret), sizeof(T));
-
-        if (ram.fail()) {
-            if (ram.bad()) {
-                std::cerr << ram.rdstate() << std::endl;
-                std::cerr << ram.gcount() << std::endl;
-                throw std::runtime_error("read failed\n");
-            } else {
-                ram.clear();
+            if (ram.fail()) {
+                throw "seekp failed\n";
             }
-        }
 
-        return ret;
+            T ret;
+            ram.read(reinterpret_cast<char*>(&ret), sizeof(T));
+
+            if (ram.fail()) {
+                throw "read failed\n";
+            }
+
+            return ret;
+        } else {
+            // std::cerr << "From: " << std::hex << memoryRef << '\n';
+            auto read = reinterpret_cast<T*>(&mmapRam_[physicalMemoryAddress]);;
+            // std::cerr << memoryRef << '\n';
+            // std::cerr << std::bitset<32>{read} << '\n';
+            return *read;
+        }
     }
 
     // Helped functions
@@ -207,6 +214,10 @@ private:
     // Page Table structure:
     // Virtual Page Addr <-> Physical Page Addr
     void InitSystemMemory();
+
+    bool useFile_ = true;
+    uint32_t loadOffset_ = 0;
+    uint8_t* mmapRam_ = nullptr;
 
     const char* RAM_PATH = "../ram/ram.bin";
 

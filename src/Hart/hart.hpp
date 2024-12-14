@@ -16,7 +16,7 @@ public:
 
     constexpr static RegisterIndex NUM_REGISTER = 32U;
 
-    explicit Hart(Machine& machine, int32_t programCounter = 0) : machine(machine) {}
+    explicit Hart(Machine& machine, int32_t programCounter = 0) : machine(machine), pc(programCounter) {}
 
     Register& operator[](const RegisterIndex idx) {
         return reg[idx];

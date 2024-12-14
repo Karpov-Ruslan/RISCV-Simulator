@@ -15,3 +15,11 @@ To start simulator:
 ```
 ./RISCV_Simulator --pc 0x10094
 ```
+
+To compare 2 traces:
+```
+ sdiff -l ./build/ref_trace.txt ./build/check_trace | cat -n | grep -v -e '($'  | less
+```
+
+Transition RAM from file to mmap:
+5705 ms -> 1274 ms per 3.7 millions of instructions
