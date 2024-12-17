@@ -1,5 +1,6 @@
 #include "instruction.hpp"
 #include <hart.hpp>
+#include <ios>
 
 namespace RISCVS::InstructionSet {
 
@@ -11,8 +12,8 @@ using UImmediate = std::make_unsigned_t<Immediate>;
 
 using RegIdx = Hart::RegisterIndex;
 
-#define D(name, p1, p2, p3) std::cout << #name << '\n';
-#define D(name, p1, p2, p3) 
+#define D(name, p1, p2, p3) std::cout << std::hex << hart.GetPC() << ' ' <<  #name <<  std::dec << '\n';
+// #define D(name, p1, p2, p3) 
 
 bool Add(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
@@ -348,6 +349,8 @@ bool Jalr(FUNC_SIGNATURE) {
     D(jalr, rd, rs1, rs2);
     hart[rd] = hart.GetPC() + 4;
     hart.SetPC(hart[rs1] + imm);
+    // std::cout << hart[rs1] << ' ' << imm << '\n';
+    // std::cout << hart.GetPC() << '\n';
     return false;
 }
 

@@ -22,7 +22,7 @@ int main(int argc, const char* argv[]) {
         // }
     }
 
-    // hart.Dump();
+    hart.Dump();
 
     // Decoder::TestDecoder();
 }

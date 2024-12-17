@@ -37,18 +37,18 @@ def create_ram(base_address, ram_file_path, code_file_path):
         all_size = 8 * 1024 * 1024 * 1024
         
         # Create ram.bin with the remaining size
-        with open(ram_file_path, 'wb') as f:
-            f.seek(0)
-            f.write(b'\x00' * base_address)
+        with open(ram_file_path, 'rb+') as f:
+            # f.seek(0)
+            # f.write(b'\x00' * base_address)
             
             # Write code.bin content starting at the specified base address
             with open(code_file_path, 'rb') as cf:
                 f.seek(base_address)
                 f.write(cf.read())
             
-            # Fill the rest with zeros
-            f.seek(base_address + code_size)
-            f.write(b'\x00' * (all_size - (base_address + code_size)))
+            # # Fill the rest with zeros
+            # f.seek(base_address + code_size)
+            # f.write(b'\x00' * (all_size - (base_address + code_size)))
         
         logger.info(f"Successfully generated {ram_file_path} with size: {os.path.getsize(ram_file_path)} bytes")
         logger.info(f"Base address used: {hex(base_address)}")
