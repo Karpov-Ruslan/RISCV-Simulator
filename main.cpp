@@ -1,6 +1,8 @@
+#include <iostream>
 #include <Decoder.hpp>
 #include <hart.hpp>
 #include <machine.hpp>
+#include <cstdio>
 
 int main(int argc, const char* argv[]) {
     using namespace RISCVS;
@@ -26,11 +28,15 @@ int main(int argc, const char* argv[]) {
     Machine machine{};
     Hart hart{machine, pcInitValue};
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; !hart.IsStop(); ++i) {
         hart.Execute();
+        // char x = getchar();
+        // if (x == 'q') {
+        //     break;
+        // }
     }
 
-    hart.Dump();
+    // hart.Dump();
 
     // Decoder::TestDecoder();
 }
