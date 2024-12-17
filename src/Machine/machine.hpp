@@ -26,7 +26,7 @@ public:
     ~Machine();
 
     MACHINE_ATTR void Store(const int32_t memoryRef, const T data) {
-        std::cerr << "MemoryRef: " << (unsigned) memoryRef << '\n';
+        // std::cerr << "MemoryRef: " << (unsigned) memoryRef << '\n';
         ram.seekp((unsigned) memoryRef);
 
         if (ram.fail()) {

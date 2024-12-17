@@ -225,7 +225,7 @@ namespace RISCVS {
             RegIdx rd  = GetRd(binInstruction);
 
             #define CASE(Instr) case mergeFunct(Instr):                             \
-                                    std::cerr << #Instr "\n";                       \
+                                    /* std::cerr << #Instr "\n"; */                 \
                                     return Instruction{                             \
                                         .PFN_Instruction = InstructionSet::Instr,   \
                                         .param1 = rd,                               \
@@ -263,7 +263,7 @@ namespace RISCVS {
             // TODO: ^--- common for all DecodeI*: move to function
 
             #define CASE(Instr) case Instr.funct3:                      \
-                        std::cerr << #Instr "\n";                       \
+                        /* std::cerr << #Instr "\n"; */                 \
                         return Instruction{                             \
                             .PFN_Instruction = InstructionSet::Instr,   \
                             .param1 = rd,                               \
@@ -280,7 +280,7 @@ namespace RISCVS {
 
                 case SrlI.funct3:
                     if (IsSraI(imm)) {
-                        std::cerr << "SraI\n";
+                        // std::cerr << "SraI\n";
                         return Instruction{
                         .PFN_Instruction = InstructionSet::SraI,
                         .param1 = rd,
@@ -288,7 +288,7 @@ namespace RISCVS {
                         .param3 = imm};
                     }                    
 
-                    std::cerr << "SrlI\n";
+                    // std::cerr << "SrlI\n";
                     return Instruction{
                         .PFN_Instruction = InstructionSet::SrlI,
                         .param1 = rd,
@@ -310,7 +310,7 @@ namespace RISCVS {
             Immediate imm = GetImmTypeI(binInstruction);
 
             #define CASE(Instr) case Instr.funct3:                      \
-                        std::cerr << #Instr "\n";                       \
+                        /* std::cerr << #Instr "\n"; */                 \
                         return Instruction{                             \
                             .PFN_Instruction = InstructionSet::Instr,   \
                             .param1 = rd,                               \
@@ -337,7 +337,7 @@ namespace RISCVS {
             RegIdx rs1 = GetRs1(binInstruction);
             Immediate imm = GetImmTypeI(binInstruction);
 
-            std::cerr << "Jalr\n";
+            // std::cerr << "Jalr\n";
             return Instruction{                            
                 .PFN_Instruction = InstructionSet::Jalr,
                 .param1 = rd,
@@ -354,7 +354,7 @@ namespace RISCVS {
             switch (imm)
             {
             case ECall.imm:
-                std::cerr << "ECall\n";
+                // std::cerr << "ECall\n";
                 return Instruction{                            
                     .PFN_Instruction = InstructionSet::ECall,
                     .param1 = rd,
@@ -362,7 +362,7 @@ namespace RISCVS {
                     .param3 = imm};
             
             case EBreak.imm:
-                std::cerr << "EBreak\n";
+                // std::cerr << "EBreak\n";
                 return Instruction{                            
                     .PFN_Instruction = InstructionSet::EBreak,
                     .param1 = rd,
@@ -383,7 +383,7 @@ namespace RISCVS {
             Immediate imm = GetImmTypeS(binInstruction);
 
             #define CASE(Instr) case Instr.funct3:             \
-                std::cerr << #Instr "\n";                      \
+                /* std::cerr << #Instr "\n"; */                \
                 return Instruction{                            \
                     .PFN_Instruction = InstructionSet::Instr,  \
                     .param1 = rs1,                             \
@@ -410,7 +410,7 @@ namespace RISCVS {
             Immediate imm = GetImmTypeB(binInstruction);
 
             #define CASE(Instr) case Instr.funct3:             \
-                std::cerr << #Instr "\n";                      \
+                /* std::cerr << #Instr "\n"; */                \
                 return Instruction{                            \
                     .PFN_Instruction = InstructionSet::Instr,  \
                     .param1 = rs1,                             \
@@ -439,7 +439,7 @@ namespace RISCVS {
             Immediate imm = GetImmTypeU(binInstruction);
 
             #define CASE(Instr) case Instr.Opcode:             \
-                std::cerr << #Instr "\n";                      \
+                /* std::cerr << #Instr "\n"; */                \
                 return Instruction{                            \
                     .PFN_Instruction = InstructionSet::Instr,  \
                     .param1 = rd,                              \
@@ -460,7 +460,7 @@ namespace RISCVS {
         Instruction DecodeJ(Uint binInstruction) {
             RegIdx rd = GetRd(binInstruction);
             Immediate imm = GetImmTypeJ(binInstruction);
-            std::cerr << "Jal\n";
+            // std::cerr << "Jal\n";
             return Instruction{                
                 .PFN_Instruction = InstructionSet::Jal, 
                 .param1 = rd,
@@ -468,47 +468,47 @@ namespace RISCVS {
         }
 
         Instruction Decode(Uint binInstruction) {
-            std::cerr << "Instuction: " << std::bitset<32>{binInstruction} << '\n';
+            // std::cerr << "Instuction: " << std::bitset<32>{binInstruction} << '\n';
             Uint const opcode = GetOpcode(binInstruction);
-            std::cerr << "Opcode: " << std::bitset<6>{opcode} << '\n';
+            // std::cerr << "Opcode: " << std::bitset<6>{opcode} << '\n';
 
             switch (opcode)
             {
                 case Type::R::Opcode:
-                    std::cerr << "R\n";
+                    // std::cerr << "R\n";
                     return DecodeR(binInstruction);
                 
                 case Type::ILogic::Opcode:
-                    std::cerr << "ILogic\n";
+                    // std::cerr << "ILogic\n";
                     return DecodeILogic(binInstruction);
 
                 case Type::ILoad::Opcode:
-                    std::cerr << "ILoad\n";
+                    // std::cerr << "ILoad\n";
                     return DecodeILoad(binInstruction);
 
                 case Type::IJump::Opcode:
-                    std::cerr << "IJump\n";
+                    // std::cerr << "IJump\n";
                     return DecodeIJump(binInstruction);
                 
                 case Type::IEnv::Opcode:
-                    std::cerr << "IEnv\n";
+                    // std::cerr << "IEnv\n";
                     return DecodeIEnv(binInstruction);
 
                 case Type::S::Opcode:
-                    std::cerr << "S\n";
+                    // std::cerr << "S\n";
                     return DecodeS(binInstruction);
 
                 case Type::B::Opcode:
-                    std::cerr << "B\n";
+                    // std::cerr << "B\n";
                     return DecodeB(binInstruction);
 
                 case Lui.Opcode:
                 case AuiPC.Opcode:
-                    std::cerr << "U\n";
+                    // std::cerr << "U\n";
                     return DecodeU(binInstruction);
 
                 case Type::J::Opcode:
-                    std::cerr << "J\n";
+                    // std::cerr << "J\n";
                     return DecodeJ(binInstruction);
 
                 default:

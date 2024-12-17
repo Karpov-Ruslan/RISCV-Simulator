@@ -59,10 +59,10 @@ public:
     void Execute(bool requireSkip = false) {
         if (!IsStop()) {
             uint32_t binInstruction = Load(pc);
-            std::cerr << "PC: " << pc << '\n';
             Instruction instruction = Decoder::Decode(binInstruction);
             bool shiftPC = instruction.PFN_Instruction(*this, instruction.param1, instruction.param2, instruction.param3);
             
+            // NextInstructionPC();
             if (shiftPC && !requireSkip) {
                 NextInstructionPC();
             }
@@ -98,7 +98,7 @@ public:
 
 private:
     std::array<Register, NUM_REGISTER> reg{Register::REGISTER_MODE::ZERO, Register::REGISTER_MODE::DEFAULT};
-    int32_t pc{};
+    int32_t pc = 0x100d8; 
 
     Machine& machine;
     bool isHalt = false;
