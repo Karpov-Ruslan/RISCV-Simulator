@@ -8,6 +8,21 @@
 int main(int argc, const char* argv[]) {
     using namespace RISCVS;
 
+    int32_t pcInitValue = 0x100d8;
+    for (size_t i = 0; i < argc; i++) {
+        const auto cmdArg = std::string_view(argv[i]);
+
+        // Flag has 1 parameter
+        if (i + 1 < argc) {
+            if (cmdArg == "--pc") {
+                // std::stoi does not support std::string_view (it is so stupid)
+                // std::atoi is UB-generator :)
+                pcInitValue = std::stoi(std::string(argv[i + 1]));
+            }
+        }
+      }
+
+  
 #ifdef MMAP
     uint32_t loadOffset = 0x10094;
     Machine machine{"../ram/code.bin", loadOffset};
@@ -15,8 +30,7 @@ int main(int argc, const char* argv[]) {
     Machine machine{};
 #endif // MMAP
 
-    // Machine machine{};
-    Hart hart{machine, 0x100d8};
+    Hart hart{machine, pcInitValue};
 
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; !hart.IsStop(); ++i) {
