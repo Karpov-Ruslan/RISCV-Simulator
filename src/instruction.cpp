@@ -12,8 +12,8 @@ using UImmediate = std::make_unsigned_t<Immediate>;
 
 using RegIdx = Hart::RegisterIndex;
 
-#define D(name, p1, p2, p3) std::cout << std::hex << hart.GetPC() << ' ' <<  #name <<  std::dec << '\n';
-// #define D(name, p1, p2, p3) 
+#define D(name, p1, p2, p3) std::cout /* << std::hex << hart.GetPC()  << ' ' */ <<  #name <<  std::dec << '\n';
+#define D(name, p1, p2, p3) 
 
 bool Add(FUNC_SIGNATURE) {
     RegIdx rd = std::get<RegIdx>(param1);
