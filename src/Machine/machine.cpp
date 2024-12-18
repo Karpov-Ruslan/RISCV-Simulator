@@ -1,5 +1,4 @@
 #include "machine.hpp"
-#include <format>
 
 #ifdef MMAP
     #include <sys/mman.h>
@@ -69,6 +68,8 @@ Machine::Machine(std::string_view code_path, uint32_t loadOffset) {
     // std::cout << "Try read: " << std::bitset<32>{((uint32_t*)mmapRam)[loadOffset_/4U]} << '\n';
 
     this->mmapRam_ = static_cast<uint8_t*>(mmapRam);
+
+    InitSystemMemory();
 #endif // MMAP
 }
 
@@ -95,7 +96,7 @@ Machine::PhysicalPageRefType Machine::PageTableSearch(const VirtualPageRefType p
         }
     }
 
-    throw std::runtime_error(std::format("Page Table does not know page virtual address: {}", pageVirtualAddr));
+    throw std::runtime_error("Page Table does not know page virtual address");
 }
 
 void Machine::InitSystemMemory() {

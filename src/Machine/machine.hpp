@@ -13,7 +13,7 @@
 
 #include <defines.hpp>
 
-// #define MMAP
+#define MMAP
 
 namespace RISCVS {
 
@@ -21,7 +21,12 @@ namespace RISCVS {
 
 class Machine {
 public:
+
+#ifndef MMAP
     using MemoryRefType = int32_t;
+#else 
+    using MemoryRefType = uint32_t;
+#endif // MMAP
 
     Machine();
 
@@ -159,7 +164,8 @@ private:
     };
 
     template <typename T, bool allowSystemMemoryStore = true> void PhysicalStore(const MemoryRefType physicalMemoryAddress, const T& data) {
-        // std::cerr << "MemoryRef: " << static_cast<uint32_t>(physicalMemoryAddress) << '\n';
+        // std::cerr << "MemoryRef: " << static_cast<uint32_t>(physicalMemoryAddress) << std::endl;
+
         if (useFile_) {
             ram.seekp((unsigned) physicalMemoryAddress);
 
