@@ -8,15 +8,15 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-
+#include <fstream>
+#include <sstream>
 
 struct SectionInfo {
     std::string name;
     uint64_t addr;
     uint64_t size;
-    std::vector<char> data; // For .text and .data
+    std::vector<char> data; // For .text, .data, .rodata, and .bss
 };
-
 
 class ElfParser {
 public:
@@ -29,7 +29,9 @@ public:
     }
 
     bool parse();
-    void extractBinary(const std::string& outputFile);
+    uint64_t getTextSectionAddress();
+    void extractBinaryRAM(const std::string& outputFile, uint64_t baseAddress);
+    void extractBinaryMMAP(const std::string& outputFile, uint64_t baseAddress);
     void printElfInfo();
 
 private:
@@ -95,7 +97,8 @@ template <typename Ehdr, typename Shdr>
 bool ElfParser::processElf(const Ehdr* ehdr, const Shdr* shdr, const char* shstrtab) {
     for (int i = 0; i < ehdr->e_shnum; ++i) {
         std::string name = getSectionName(shstrtab, shdr[i].sh_name);
-        if (name == ".text" || name == ".data" || name == ".bss") {
+        if (name == ".text" || name == ".data" || name == ".bss" || name == ".rodata" ||
+            name == ".sdata" || name == ".sbss" || name == ".init_array" || name == ".fini_array") {
             SectionInfo sec;
             sec.name = name;
             sec.addr = shdr[i].sh_addr;
@@ -104,6 +107,8 @@ bool ElfParser::processElf(const Ehdr* ehdr, const Shdr* shdr, const char* shstr
             if (shdr[i].sh_type != SHT_NOBITS) {
                 const char* secData = reinterpret_cast<const char*>(ehdr) + shdr[i].sh_offset;
                 sec.data.assign(secData, secData + shdr[i].sh_size);
+            } else {
+                sec.data.resize(shdr[i].sh_size, 0); // For .bss and .sbss - initialisation with zeros
             }
 
             sections.push_back(sec);
@@ -112,38 +117,107 @@ bool ElfParser::processElf(const Ehdr* ehdr, const Shdr* shdr, const char* shstr
     return true;
 }
 
-void ElfParser::extractBinary(const std::string& outputFile) {
+uint64_t ElfParser::getTextSectionAddress() {
+    for (const auto& sec : sections) {
+        if (sec.name == ".text") {
+            return sec.addr;
+        }
+    }
+    throw std::runtime_error("Section .text not found.");
+}
+
+void ElfParser::extractBinaryRAM(const std::string& outputFile, uint64_t baseAddress) {
     if (sections.empty()) {
         std::cerr << "No sections to process.\n";
         return;
     }
 
-    uint64_t baseAddr = sections[0].addr;
-    uint64_t endAddr = sections[0].addr + sections[0].size;
-
-    for (const auto& sec : sections) {
-        baseAddr = std::min(baseAddr, sec.addr);
-        endAddr = std::max(endAddr, sec.addr + sec.size);
+    int outFd = open(outputFile.c_str(), O_RDWR);
+    if (outFd < 0) {
+        perror("open (output)");
+        return;
     }
 
-    uint64_t totalSize = endAddr - baseAddr;
-    std::vector<char> binary(totalSize, 0);
+    uint64_t text_addr = getTextSectionAddress();
 
     for (const auto& sec : sections) {
+        uint64_t offset = baseAddress + (sec.addr - text_addr);
+
+        if (lseek(outFd, offset, SEEK_SET) == -1) {
+            perror("lseek");
+            close(outFd);
+            return;
+        }
+
         if (!sec.data.empty()) {
-            uint64_t offset = sec.addr - baseAddr;
-            std::copy(sec.data.begin(), sec.data.end(), binary.begin() + offset);
+            ssize_t written = write(outFd, sec.data.data(), sec.data.size());
+            if (written != static_cast<ssize_t>(sec.data.size())) {
+                std::cerr << "Error writing section " << sec.name << ".\n";
+                close(outFd);
+                return;
+            }
+            std::cout << "Section " << sec.name << " written at offset: 0x" << std::hex << offset << "\n";
         }
     }
 
-    int outFd = open(outputFile.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    close(outFd);
+    std::cout << "Sections successfully written to RAM file: " << outputFile << "\n";
+}
 
-    if (write(outFd, binary.data(), binary.size()) != static_cast<ssize_t>(binary.size())) {
-        std::cerr << "Error writing to output file.\n";
+void ElfParser::extractBinaryMMAP(const std::string& outputFile, uint64_t baseAddress) {
+    if (sections.empty()) {
+        std::cerr << "No sections to process.\n";
+        return;
+    }
+
+    
+    int outFd = open(outputFile.c_str(), O_RDWR | O_CREAT, 0644);
+    if (outFd < 0) {
+        perror("open (output)");
+        return;
+    }
+
+    
+    uint64_t highestAddress = 0;
+    for (const auto& sec : sections) {
+        highestAddress = std::max(highestAddress, sec.addr + sec.size);
+    }
+
+    
+    if (ftruncate(outFd, highestAddress) == -1) {
+        perror("ftruncate");
+        close(outFd);
+        return;
+    }
+
+    uint64_t text_addr = getTextSectionAddress();
+    
+    for (const auto& sec : sections) {
+        uint64_t offset = baseAddress + (sec.addr - text_addr);
+
+        
+        if (lseek(outFd, offset, SEEK_SET) == -1) {
+            perror("lseek");
+            close(outFd);
+            return;
+        }
+
+        if (!sec.data.empty()) {
+            ssize_t written = write(outFd, sec.data.data(), sec.data.size());
+            if (written != static_cast<ssize_t>(sec.data.size())) {
+                std::cerr << "Error writing section " << sec.name << ".\n";
+                close(outFd);
+                return;
+            }
+            std::cout << "Section " << sec.name << " written at offset: 0x" << std::hex << offset << "\n";
+        }
     }
 
     close(outFd);
+    std::cout << "Sections successfully written to RAM file: " << outputFile << "\n";
 }
+
+
 
 void ElfParser::printElfInfo() {
     if (!map) {
@@ -168,14 +242,35 @@ void ElfParser::printElfInfo() {
 }
 
 
-// int main(int argc, char** argv) {
-//     ElfParser parser(argv[1]);
+int main(int argc, char** argv) {
+    bool flag = false;
 
-//     if (!parser.parse()) {
-//         return 1;
-//     }
+    if (argc < 3 || argc > 4) {
+        std::cerr << "Usage: " << argv[0] << " <input.elf> <output.ram> [--ram]\n";
+        return 1;
+    }
 
-//     parser.printElfInfo();
-//     parser.extractBinary(argv[2]);
-//     return 0;
-// }
+    std::string inputFile = argv[1];
+    std::string outputFile = argv[2];
+
+    if (argc == 4 && std::string(argv[3]) == "--ram") {
+        flag = true;
+    }
+    
+    ElfParser parser(inputFile);
+
+    if (!parser.parse()) {
+        return 1;
+    }
+
+    // parser.printElfInfo();
+    
+    if (flag) {
+        parser.extractBinaryRAM(outputFile, 0x10094);
+    } else {
+        parser.extractBinaryMMAP(outputFile, 0x0);
+    }
+
+    return 0;
+}
+
