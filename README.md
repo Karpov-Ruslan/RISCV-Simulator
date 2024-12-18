@@ -29,6 +29,11 @@ To compare 2 traces:
 Transition RAM from file to mmap:
 5705 ms -> 1274 ms per 3.7 millions of instructions
 
+Added "-O3" compile options:
+1274 ms -> 30 ms per 3.7 millions of instructions
+
+Still bottleneck is Decoder.
+
 Usefull links:
 
 Nice and compact reference - there are opcode, semantics, instruction layout:
