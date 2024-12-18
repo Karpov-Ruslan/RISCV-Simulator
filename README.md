@@ -4,7 +4,12 @@ To prepare .elf for loading in memory:
 riscv32-unknown-elf-objcopy -O binary your.elf your.bin 
 ```
 
-To create zeroed-ram with loaded code.bin:
+To show first bytes of binary file:
+```
+xxd -c 4 -b your.bin | less
+```
+
+To create 5Gb zeroed-ram with loaded code.bin:
 ```
 dd if=/dev/zero of=ram.bin bs=1000000000 count=5
 cd ram
@@ -23,3 +28,20 @@ To compare 2 traces:
 
 Transition RAM from file to mmap:
 5705 ms -> 1274 ms per 3.7 millions of instructions
+
+Added "-O3" compile options:
+1274 ms -> 30 ms per 3.7 millions of instructions
+
+Still bottleneck is Decoder.
+
+Usefull links:
+
+Nice and compact reference - there are opcode, semantics, instruction layout:
+https://www.cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf
+
+Prebuilt toolchain:
+https://github.com/stnolting/riscv-gcc-prebuilt
+
+If you get unknown instruction "100010101010101010".
+It's convinient to put this bin code here and check if it's really an existing instruction:
+https://luplab.gitlab.io/rvcodecjs/
